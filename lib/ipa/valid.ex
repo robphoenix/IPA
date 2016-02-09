@@ -1,7 +1,6 @@
 defprotocol Valid do
   @doc "Returns true if address is considered nominally valid"
   def valid?(address)
-
 end
 
 defimpl Valid, for: Address do
