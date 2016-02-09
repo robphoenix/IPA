@@ -1,3 +1,3 @@
 defmodule IPA do
-  def address(address), do: Address.address(address)
+  def address(address), do: IPA.Address.address(address)
 end

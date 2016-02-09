@@ -1,4 +1,4 @@
-defmodule Address do
+defmodule IPA.Address do
 	defstruct address: nil, version: 4, bin: nil, hex: nil, bits: nil, tuple: nil
 
   def address(addr) do
