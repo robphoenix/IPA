@@ -53,15 +53,6 @@ defmodule IPA.Address do
     end
   end
 
-  defp valid_octet?(octet) when octet >= 0 and octet < 256, do: true
-  defp valid_octet?(_), do: false
-
-  defp addr_to_list_of_bin(addr) do
-    addr
-    |> String.split(".")
-    |> Enum.map(&dec_to_bin/1)
-  end
-
   defp addr_to_bits(addr) do
     addr
     |> addr_to_list_of_bin
@@ -72,15 +63,21 @@ defmodule IPA.Address do
     "0b" <> (addr |> addr_to_list_of_bin |> Enum.join)
   end
 
+  defp addr_to_list_of_bin(addr) do
+    addr
+    |> String.split(".")
+    |> Enum.map(&dec_to_bin/1)
+  end
+
+  defp justify(n, len) when byte_size(n) == byte_size(len), do: n
+  defp justify(n, len), do: String.rjust(n, len, ?0)
+
   defp dec_to_bin(n) when is_binary(n) do
     dec_to_bin(String.to_integer(n), "")
   end
   defp dec_to_bin(n) when is_integer(n) do
     dec_to_bin(n, "")
   end
-
-  defp justify(n, len) when byte_size(n) == byte_size(len), do: n
-  defp justify(n, len), do: String.rjust(n, len, ?0)
 
   defp dec_to_bin(0, acc), do: justify(acc, 8)
   defp dec_to_bin(n, acc) do
