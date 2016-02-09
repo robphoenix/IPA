@@ -1,6 +1,47 @@
 defmodule IPA.Address do
+  @moduledoc """
+  Functions for defining an IP address struct from a valid IP address.
+
+  The IP address struct contains the original dot-decimal
+  notation address, it's IP version, and the address as a
+  binary value, a hexadecimal value, a binary dot notation,
+  and a 4 element tuple.
+  """
+
 	defstruct address: nil, version: 4, bin: nil, hex: nil, bits: nil, tuple: nil
 
+  @doc """
+  Defines an IP Address struct.
+
+  ## Example
+
+      iex> {:ok, ip} = IPA.address("192.168.0.1")
+      {:ok,
+      %Address{address: "192.168.0.1",
+               bin: "0b11000000101010000000000000000001",
+               bits: "11000000.10101000.00000000.00000001",
+               hex: "0xC0A80001",
+               tuple: {192, 168, 0, 1},
+               version: 4}}
+      iex> ip.address
+      "192.168.0.1"
+      iex> ip.bin
+      "0b11000000101010000000000000000001"
+      iex> ip.bits
+      "11000000.10101000.00000000.00000001"
+      iex> ip.hex
+      "0xC0A80001"
+      iex> ip.tuple
+      {192, 168, 0, 1}
+      iex> ip.version
+      4
+  """
+  @spec address(String.t) :: %Address{address: String.t,
+                                      version: integer,
+                                      bin: String.t,
+                                      bits: String.t,
+                                      hex: String.t,
+                                      tuple: tuple}
   def address(addr) do
     case Valid.Address.valid?(addr) do
       true -> {:ok, %Address{address: addr,
@@ -12,8 +53,8 @@ defmodule IPA.Address do
     end
   end
 
-  def valid_octet?(octet) when octet >= 0 and octet < 256, do: true
-  def valid_octet?(_), do: false
+  defp valid_octet?(octet) when octet >= 0 and octet < 256, do: true
+  defp valid_octet?(_), do: false
 
   defp addr_to_list_of_bin(addr) do
     addr
@@ -38,12 +79,10 @@ defmodule IPA.Address do
     dec_to_bin(n, "")
   end
 
-  defp dec_to_bin(0, acc) do
-    cond do
-      String.length(acc) < 8 -> String.rjust(acc, 8, ?0)
-      true -> acc
-    end
-  end
+  defp justify(n, len) when byte_size(n) == byte_size(len), do: n
+  defp justify(n, len), do: String.rjust(n, len, ?0)
+
+  defp dec_to_bin(0, acc), do: justify(acc, 8)
   defp dec_to_bin(n, acc) do
 	  dec_to_bin(div(n, 2), to_string(rem(n, 2)) <> acc)
   end
@@ -70,12 +109,7 @@ defmodule IPA.Address do
   defp dec_to_hex(n) when is_integer(n) do
     dec_to_hex(n, "")
   end
-  defp dec_to_hex(0, acc)do
-    cond do
-      String.length(acc) < 2 -> String.rjust(acc, 2, ?0)
-      true -> acc
-    end
-  end
+  defp dec_to_hex(0, acc), do: justify(acc, 2)
   defp dec_to_hex(n, acc) do
     dec_to_hex(div(n, 16), (rem(n, 16) |> hex_notation |> to_string) <> acc)
   end
