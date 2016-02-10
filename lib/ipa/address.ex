@@ -8,7 +8,7 @@ defmodule IPA.Address do
   and a 4 element tuple.
   """
 
-	defstruct address: nil, version: 4, bin: nil, hex: nil, bits: nil, tuple: nil
+	defstruct address: nil, version: 4, bin: nil, hex: nil, bits: nil, tuple: nil, address_type: nil, reserved: nil
 
   @doc """
   Defines an IP Address struct.
@@ -53,35 +53,29 @@ defmodule IPA.Address do
     end
   end
 
+  defp addr_to_list_of_bin(addr) do
+    addr
+    |> convert_addr_base(2, 8)
+  end
+
+  defp addr_to_bin(addr) do
+    addr
+    |> addr_to_list_of_bin
+    |> Enum.join()
+    |> add_prefix("0b")
+  end
+
   defp addr_to_bits(addr) do
     addr
     |> addr_to_list_of_bin
     |> Enum.join(".")
   end
 
-  defp addr_to_bin(addr) do
-    "0b" <> (addr |> addr_to_list_of_bin |> Enum.join)
-  end
-
-  defp addr_to_list_of_bin(addr) do
+  defp addr_to_hex(addr) do
     addr
-    |> String.split(".")
-    |> Enum.map(&dec_to_bin/1)
-  end
-
-  defp justify(n, len) when byte_size(n) == byte_size(len), do: n
-  defp justify(n, len), do: String.rjust(n, len, ?0)
-
-  defp dec_to_bin(n) when is_binary(n) do
-    dec_to_bin(String.to_integer(n), "")
-  end
-  defp dec_to_bin(n) when is_integer(n) do
-    dec_to_bin(n, "")
-  end
-
-  defp dec_to_bin(0, acc), do: justify(acc, 8)
-  defp dec_to_bin(n, acc) do
-	  dec_to_bin(div(n, 2), to_string(rem(n, 2)) <> acc)
+    |> convert_addr_base(16, 2)
+    |> Enum.join()
+    |> add_prefix("0x")
   end
 
   defp addr_to_tuple(addr) do
@@ -91,32 +85,18 @@ defmodule IPA.Address do
     |> List.to_tuple
   end
 
-  defp addr_to_hex(addr) do
-    hex_addr = addr
+  defp convert_addr_base(addr, base, padding) do
+    addr
     |> String.split(".")
-    |> Enum.map(&dec_to_hex/1)
-    |> Enum.join()
-
-    "0x" <> hex_addr
+    |> Stream.map(&String.to_integer(&1))
+    |> Stream.map(&Integer.to_string(&1, base))
+    |> Stream.map(&zero_padding(&1, padding))
   end
 
-  defp dec_to_hex(n) when is_binary(n) do
-    dec_to_hex(String.to_integer(n), "")
-  end
-  defp dec_to_hex(n) when is_integer(n) do
-    dec_to_hex(n, "")
-  end
-  defp dec_to_hex(0, acc), do: justify(acc, 2)
-  defp dec_to_hex(n, acc) do
-    dec_to_hex(div(n, 16), (rem(n, 16) |> hex_notation |> to_string) <> acc)
-  end
+  defp zero_padding(n, len) when byte_size(n) == byte_size(len), do: n
+  defp zero_padding(n, len), do: String.rjust(n, len, ?0)
 
-  defp hex_notation(n) when n < 10, do: n
-  defp hex_notation(10), do: "A"
-  defp hex_notation(11), do: "B"
-  defp hex_notation(12), do: "C"
-  defp hex_notation(13), do: "D"
-  defp hex_notation(14), do: "E"
-  defp hex_notation(15), do: "F"
+  defp add_prefix(str, prefix), do: prefix <> str
+
 end
 
