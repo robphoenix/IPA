@@ -10,7 +10,7 @@ defimpl Valid, for: Address do
       4 ->
         ip_to_list
         |> Enum.map(&String.to_integer/1)
-        |> Enum.all?(&IPA.Assistant.valid_octet?/1)
+        |> Enum.all?(&IPA.Helpers.valid_octet?/1)
       _ ->
         false
     end

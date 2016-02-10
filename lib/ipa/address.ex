@@ -8,7 +8,7 @@ defmodule IPA.Address do
   and a 4 element tuple.
   """
 
-	defstruct address: nil, version: 4, bin: nil, hex: nil, bits: nil, tuple: nil, address_type: nil, reserved: nil
+  defstruct address: nil, version: 4, bin: nil, hex: nil, bits: nil, tuple: nil, address_type: nil, reserved: nil
 
   @doc """
   Defines an IP Address struct.
@@ -43,13 +43,14 @@ defmodule IPA.Address do
                                       hex: String.t,
                                       tuple: tuple}
   def address(addr) do
-    case Valid.Address.valid?(addr) do
-      true -> {:ok, %Address{address: addr,
-                             bin: addr_to_bin(addr),
-                             bits: addr_to_bits(addr),
-                             hex: addr_to_hex(addr),
-                             tuple: addr_to_tuple(addr)}}
-      false -> {:error, "Not a valid ip address"}
+    if Valid.Address.valid?(addr) do
+      {:ok, %Address{address: addr,
+                     bin: addr_to_bin(addr),
+                     bits: addr_to_bits(addr),
+                     hex: addr_to_hex(addr),
+                     tuple: addr_to_tuple(addr)}}
+    else
+        {:error, "Not a valid ip address"}
     end
   end
 
