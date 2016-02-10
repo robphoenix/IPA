@@ -17,12 +17,10 @@ defmodule IPA.Address do
 
       iex> {:ok, ip} = IPA.address("192.168.0.1")
       {:ok,
-      %Address{address: "192.168.0.1",
-               bin: "0b11000000101010000000000000000001",
-               bits: "11000000.10101000.00000000.00000001",
-               hex: "0xC0A80001",
-               tuple: {192, 168, 0, 1},
-               version: 4}}
+      %IPA.Address{address: "192.168.0.1", address_type: nil,
+      bin: "0b11000000101010000000000000000001",
+      bits: "11000000.10101000.00000000.00000001", hex: "0xC0A80001", reserved: nil,
+      tuple: {192, 168, 0, 1}, version: 4}}
       iex> ip.address
       "192.168.0.1"
       iex> ip.bin
@@ -35,22 +33,27 @@ defmodule IPA.Address do
       {192, 168, 0, 1}
       iex> ip.version
       4
+      iex> IPA.address("192.168.0.256")
+      {:error, "Not a valid ip address"}
+      iex> IPA.address("192.168.0")
+      {:error, "Not a valid ip address"}
+
   """
-  @spec address(String.t) :: %Address{address: String.t,
-                                      version: integer,
-                                      bin: String.t,
-                                      bits: String.t,
-                                      hex: String.t,
-                                      tuple: tuple}
+  @spec address(String.t) :: %IPA.Address{address: String.t,
+                                          version: integer,
+                                          bin: String.t,
+                                          bits: String.t,
+                                          hex: String.t,
+                                          tuple: tuple}
   def address(addr) do
     if Valid.Address.valid?(addr) do
-      {:ok, %Address{address: addr,
-                     bin: addr_to_bin(addr),
-                     bits: addr_to_bits(addr),
-                     hex: addr_to_hex(addr),
-                     tuple: addr_to_tuple(addr)}}
+      {:ok, %IPA.Address{address: addr,
+                         bin: addr_to_bin(addr),
+                         bits: addr_to_bits(addr),
+                         hex: addr_to_hex(addr),
+                         tuple: addr_to_tuple(addr)}}
     else
-        {:error, "Not a valid ip address"}
+      {:error, "Not a valid ip address"}
     end
   end
 
