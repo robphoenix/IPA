@@ -3,6 +3,7 @@ defmodule IPATest do
   doctest IPA
 
   alias Valid.Address
+  alias IPA.Helpers
 
   ExUnit.configure trace: true
 
@@ -44,5 +45,34 @@ defmodule IPATest do
     assert Address.valid?("192.168.0.256") == false
     assert Address.valid?("192.168.0") == false
     assert Address.valid?("192.168.0.1.1") == false
+  end
+
+  test "valid octet" do
+    assert Helpers.valid_octet?(192) == true
+  end
+
+  test "invalid octets" do
+    assert Helpers.valid_octet?(-1) == false
+    assert Helpers.valid_octet?(256) == false
+  end
+
+  test "dot decimal address to hex" do
+    {:ok, %{hex: hex}} = IPA.address("192.168.0.1")
+    assert hex == "0xC0A80001"
+  end
+
+  test "dot decimal address to bits" do
+    {:ok, %{bits: bits}} = IPA.address("192.168.0.1")
+    assert bits == "11000000.10101000.00000000.00000001"
+  end
+
+  test "dot decimal address to binary" do
+    {:ok, %{bin: bin}} = IPA.address("192.168.0.1")
+    assert bin == "0b11000000101010000000000000000001"
+  end
+
+  test "dot decimal address to tuple" do
+    {:ok, %{tuple: tuple}} = IPA.address("192.168.0.1")
+    assert tuple == {192, 168, 0, 1}
   end
 end
