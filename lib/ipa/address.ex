@@ -8,7 +8,16 @@ defmodule IPA.Address do
   and a 4 element tuple.
   """
 
-  defstruct address: nil, version: 4, bin: nil, hex: nil, bits: nil, tuple: nil, address_type: nil, reserved: nil
+  defstruct [
+    address: nil,
+    version: 4,
+    bin: nil,
+    hex: nil,
+    bits: nil,
+    tuple: nil,
+    address_type: nil,
+    reserved: nil
+  ]
 
   @doc """
   Defines an IP Address struct.
