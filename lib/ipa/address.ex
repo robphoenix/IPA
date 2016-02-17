@@ -15,8 +15,6 @@ defmodule IPA.Address do
     hex: nil,
     bits: nil,
     tuple: nil,
-    address_type: nil,
-    reserved: nil
   ]
 
   @doc """
@@ -62,7 +60,7 @@ defmodule IPA.Address do
                          hex: addr_to_hex(addr),
                          tuple: addr_to_tuple(addr)}}
     else
-      {:error, "Not a valid ip address"}
+      {:error, "Not a valid IP address"}
     end
   end
 
