@@ -1,9 +1,8 @@
 defmodule IPATest do
   use ExUnit.Case
-  doctest IPA
+  #doctest IPA
 
-  alias Valid.Address
-  alias IPA.Helpers
+  alias IPA.Address
 
   ExUnit.configure trace: true
 
