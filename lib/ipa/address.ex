@@ -58,7 +58,7 @@ defmodule IPA.Address do
                                  tuple: tuple,
                                  block: atom}} | {atom, String.t}
   def address(addr) do
-    if Valid.Address.valid?(addr) do
+    if valid?(addr) do
       {:ok, %IPA.Address{
           address: addr,
           bin: IPA.Convert.addr_to_bin(addr),
@@ -70,4 +70,20 @@ defmodule IPA.Address do
       {:error, "Not a valid IP address"}
     end
   end
+
+  def valid?(addr) do
+    addr
+    |> String.split(".", trim: true)
+    |> number_of_octets
+  end
+
+  defp number_of_octets(octets) when length(octets) == 4 do
+    octets
+    |> Enum.map(&String.to_integer/1)
+    |> Enum.all?(&valid_octet?/1)
+  end
+  defp number_of_octets(octets), do: :false
+
+  defp valid_octet?(octet) when octet in 0..255, do: true
+  defp valid_octet?(_), do: false
 end

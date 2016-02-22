@@ -11,6 +11,7 @@ defmodule IPATest do
                 address: "192.168.0.1",
                 bin: "0b11000000101010000000000000000001",
                 bits: "11000000.10101000.00000000.00000001",
+                block: :rfc1918,
                 hex: "0xC0A80001",
                 tuple: {192, 168, 0, 1},
                 version: 4}}
@@ -31,10 +32,12 @@ defmodule IPATest do
 
   test "address delegate error when < 4 octets" do
     assert IPA.address("192.168.0") == @invalid
+    assert IPA.address("192.168.0.") == @invalid
   end
 
   test "address delegate error when > 4 octets" do
     assert IPA.address("192.168.0.1.1") == @invalid
+    assert IPA.address("192.168.0.1.1.") == @invalid
   end
 
   test "valid address" do
@@ -45,15 +48,7 @@ defmodule IPATest do
     assert Address.valid?("192.168.0.256") == false
     assert Address.valid?("192.168.0") == false
     assert Address.valid?("192.168.0.1.1") == false
-  end
-
-  test "valid octet" do
-    assert Helpers.valid_octet?(192) == true
-  end
-
-  test "invalid octets" do
-    assert Helpers.valid_octet?(-1) == false
-    assert Helpers.valid_octet?(256) == false
+    assert Address.valid?("192.168.0.1.") == false
   end
 
   test "dot decimal address to hex" do
