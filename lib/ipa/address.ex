@@ -19,7 +19,6 @@ defmodule IPA.Address do
                              tuple: tuple,
                              block: atom}
 
-  @addr_regex ~r/^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/
 
   defstruct [
     address: nil,
@@ -30,6 +29,11 @@ defmodule IPA.Address do
     tuple: nil,
     block: nil,
   ]
+
+  @addr_regex ~r/^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]\
+  )\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]\
+  )\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]\
+  )\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/
 
   @doc """
   Defines an IP Address struct.
@@ -65,11 +69,11 @@ defmodule IPA.Address do
   @spec address(String.t) :: addr_struct | :invalid
   def address(addr) do
     if valid?(addr) do
-      bin_worker = Task.async(fn -> addr_to_bin(addr) end)
-      bits_worker = Task.async(fn -> addr_to_bits(addr) end)
-      hex_worker = Task.async(fn -> addr_to_hex(addr) end)
-      tuple_worker = Task.async(fn -> addr_to_tuple(addr) end)
-      block_worker = Task.async(fn -> block(addr) end)
+      bin_worker = Task.async(__MODULE__, :addr_to_bin, [addr])
+      bits_worker = Task.async(__MODULE__, :addr_to_bits, [addr])
+      hex_worker = Task.async(__MODULE__, :addr_to_hex, [addr])
+      tuple_worker = Task.async(__MODULE__, :addr_to_tuple, [addr])
+      block_worker = Task.async(__MODULE__, :block, [addr])
 
       %IPA.Address{
         address: addr,
@@ -142,7 +146,7 @@ defmodule IPA.Address do
   # Add numerical prefix (ie. "0b" for binary, "0x" for hex)
   defp add_prefix(str, prefix), do: prefix <> str
 
-  defp block(addr) do
+  def block(addr) do
     addr
     |> addr_to_tuple
     |> _block
