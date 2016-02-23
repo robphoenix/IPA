@@ -8,6 +8,19 @@ defmodule IPA.Address do
   and a 4 element tuple.
   """
 
+  @typedoc """
+  The IP Address Struct
+  """
+  @type addr_struct :: %IPA.Address{address: String.t,
+                             version: non_neg_integer,
+                             bin: String.t,
+                             bits: String.t,
+                             hex: String.t,
+                             tuple: tuple,
+                             block: atom}
+
+  @addr_regex ~r/^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/
+
   defstruct [
     address: nil,
     version: 4,
@@ -49,14 +62,7 @@ defmodule IPA.Address do
       {:error, "Not a valid ip address"}
 
   """
-  @spec address(String.t) :: {atom, %IPA.Address{
-                                 address: String.t,
-                                 version: non_neg_integer,
-                                 bin: String.t,
-                                 bits: String.t,
-                                 hex: String.t,
-                                 tuple: tuple,
-                                 block: atom}} | {atom, String.t}
+  @spec address(String.t) :: addr_struct | :invalid
   def address(addr) do
     if valid?(addr) do
       bin_worker = Task.async(fn -> addr_to_bin(addr) end)
@@ -64,38 +70,20 @@ defmodule IPA.Address do
       hex_worker = Task.async(fn -> addr_to_hex(addr) end)
       tuple_worker = Task.async(fn -> addr_to_tuple(addr) end)
       block_worker = Task.async(fn -> block(addr) end)
-      {:ok, %IPA.Address{
-          address: addr,
-          bin: Task.await(bin_worker),
-          bits: Task.await(bits_worker),
-          hex: Task.await(hex_worker),
-          tuple: Task.await(tuple_worker),
-          block: Task.await(block_worker)}}
+
+      %IPA.Address{
+        address: addr,
+        bin: Task.await(bin_worker),
+        bits: Task.await(bits_worker),
+        hex: Task.await(hex_worker),
+        tuple: Task.await(tuple_worker),
+        block: Task.await(block_worker)}
     else
-      {:error, "Not a valid IP address"}
+      :invalid
     end
   end
 
-  def valid?(addr) do
-    cond do
-      String.ends_with?(addr, ".") ->
-        :false
-      true ->
-        addr
-        |> String.split(".", trim: true)
-        |> number_of_octets
-    end
-  end
-
-  defp number_of_octets(octets) when length(octets) == 4 do
-    octets
-    |> Enum.map(&String.to_integer/1)
-    |> Enum.all?(&valid_octet?/1)
-  end
-  defp number_of_octets(_octets), do: :false
-
-  defp valid_octet?(octet) when octet in 0..255, do: true
-  defp valid_octet?(_), do: false
+  def valid?(addr), do: Regex.match?(@addr_regex, addr)
 
   # Convert the address from decimal to a "0b" prefixed binary number
   def addr_to_bin(addr) do
