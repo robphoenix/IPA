@@ -11,7 +11,7 @@ defmodule IPATest do
                          bits: "11000000.10101000.00000000.00000001",
                          block: :rfc1918,
                          hex: "0xC0A80001",
-                         tuple: {192, 168, 0, 1},
+                         octets: {192, 168, 0, 1},
                          version: 4}
 
   test "address delegate returns expected" do
@@ -62,8 +62,8 @@ defmodule IPATest do
     assert bin == "0b11000000101010000000000000000001"
   end
 
-  test "dot decimal address to tuple" do
-    %{tuple: tuple} = IPA.address("192.168.0.1")
-    assert tuple == {192, 168, 0, 1}
+  test "dot decimal address to octets" do
+    %{octets: octets} = IPA.address("192.168.0.1")
+    assert octets == {192, 168, 0, 1}
   end
 end

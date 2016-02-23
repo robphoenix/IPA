@@ -16,7 +16,7 @@ defmodule IPA.Address do
                              bin: String.t,
                              bits: String.t,
                              hex: String.t,
-                             tuple: tuple,
+                             octets: tuple,
                              block: atom}
 
 
@@ -26,7 +26,7 @@ defmodule IPA.Address do
     bin: nil,
     hex: nil,
     bits: nil,
-    tuple: nil,
+    octets: nil,
     block: nil,
   ]
 
@@ -45,7 +45,7 @@ defmodule IPA.Address do
       %IPA.Address{address: "192.168.0.1", address_type: nil,
       bin: "0b11000000101010000000000000000001",
       bits: "11000000.10101000.00000000.00000001", block: :rfc1918,
-      hex: "0xC0A80001", tuple: {192, 168, 0, 1}, version: 4}}
+      hex: "0xC0A80001", octets: {192, 168, 0, 1}, version: 4}}
       iex> ip.address
       "192.168.0.1"
       iex> ip.bin
@@ -56,7 +56,7 @@ defmodule IPA.Address do
       :rfc1918
       iex> ip.hex
       "0xC0A80001"
-      iex> ip.tuple
+      iex> ip.octets
       {192, 168, 0, 1}
       iex> ip.version
       4
@@ -72,7 +72,7 @@ defmodule IPA.Address do
       bin_worker = Task.async(__MODULE__, :addr_to_bin, [addr])
       bits_worker = Task.async(__MODULE__, :addr_to_bits, [addr])
       hex_worker = Task.async(__MODULE__, :addr_to_hex, [addr])
-      tuple_worker = Task.async(__MODULE__, :addr_to_tuple, [addr])
+      octets_worker = Task.async(__MODULE__, :addr_to_octets, [addr])
       block_worker = Task.async(__MODULE__, :block, [addr])
 
       %IPA.Address{
@@ -80,7 +80,7 @@ defmodule IPA.Address do
         bin: Task.await(bin_worker),
         bits: Task.await(bits_worker),
         hex: Task.await(hex_worker),
-        tuple: Task.await(tuple_worker),
+        octets: Task.await(octets_worker),
         block: Task.await(block_worker)}
     else
       :invalid
@@ -113,7 +113,7 @@ defmodule IPA.Address do
   end
 
   # Convert address string to 4 element tuple
-  def addr_to_tuple(addr) do
+  def addr_to_octets(addr) do
     addr
     |> String.split(".")
     |> Enum.map(&String.to_integer/1)
@@ -148,7 +148,7 @@ defmodule IPA.Address do
 
   def block(addr) do
     addr
-    |> addr_to_tuple
+    |> addr_to_octets
     |> _block
   end
 
