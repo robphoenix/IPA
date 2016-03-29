@@ -69,10 +69,10 @@ defmodule IPA.Address do
   @spec address(String.t) :: addr_struct | :invalid
   def address(addr) do
     if valid?(addr) do
-      bin_worker = Task.async(__MODULE__, :addr_to_bin, [addr])
-      bits_worker = Task.async(__MODULE__, :addr_to_bits, [addr])
-      hex_worker = Task.async(__MODULE__, :addr_to_hex, [addr])
-      octets_worker = Task.async(__MODULE__, :addr_to_octets, [addr])
+      bin_worker = Task.async(__MODULE__, :to_binary, [addr])
+      bits_worker = Task.async(__MODULE__, :to_bits, [addr])
+      hex_worker = Task.async(__MODULE__, :to_hex, [addr])
+      octets_worker = Task.async(__MODULE__, :to_octets, [addr])
       block_worker = Task.async(__MODULE__, :block, [addr])
 
       %IPA.Address{
@@ -90,7 +90,7 @@ defmodule IPA.Address do
   def valid?(addr), do: Regex.match?(@addr_regex, addr)
 
   # Convert the address from decimal to a "0b" prefixed binary number
-  def addr_to_bin(addr) do
+  def to_binary(addr) do
     addr
     |> addr_to_list_of_bin
     |> Enum.join()
@@ -98,14 +98,14 @@ defmodule IPA.Address do
   end
 
   # Convert address from decimal to binary bits
-  def addr_to_bits(addr) do
+  def to_bits(addr) do
     addr
     |> addr_to_list_of_bin
     |> Enum.join(".")
   end
 
   # Convert address from decimal to hexadecimal
-  def addr_to_hex(addr) do
+  def to_hex(addr) do
     addr
     |> convert_addr_base(16, 2)
     |> Enum.join()
@@ -113,7 +113,7 @@ defmodule IPA.Address do
   end
 
   # Convert address string to 4 element tuple
-  def addr_to_octets(addr) do
+  def to_octets(addr) do
     addr
     |> String.split(".")
     |> Enum.map(&String.to_integer/1)
@@ -121,7 +121,7 @@ defmodule IPA.Address do
   end
 
   # Convert the address to a list of 4 binary numbers
-  # for use in `addr_to_bin` & `addr_to_bits`
+  # for use in `to_binary` & `to_bits`
   defp addr_to_list_of_bin(addr) do
     addr
     |> convert_addr_base(2, 8)
@@ -134,39 +134,39 @@ defmodule IPA.Address do
     |> String.split(".")
     |> Stream.map(&String.to_integer(&1))
     |> Stream.map(&Integer.to_string(&1, base))
-    |> Stream.map(&zero_padding(&1, max_length))
+    |> Stream.map(&zero_pad(&1, max_length))
   end
 
   # When numbers are converted from decimal to binary/hex
   # any leading zeroes are discarded, so we need to zero-pad
   # them to their expected length (ie. 8 for binary, 2 for hex)
-  defp zero_padding(n, max_length) when byte_size(n) == byte_size(max_length), do: n
-  defp zero_padding(n, max_length), do: String.rjust(n, max_length, ?0)
+  defp zero_pad(n, max_length) when byte_size(n) == byte_size(max_length), do: n
+  defp zero_pad(n, max_length), do: String.rjust(n, max_length, ?0)
 
   # Add numerical prefix (ie. "0b" for binary, "0x" for hex)
   defp add_prefix(str, prefix), do: prefix <> str
 
   def block(addr) do
     addr
-    |> addr_to_octets
-    |> _block
+    |> to_octets
+    |> which_block?
   end
 
-  defp _block({0, _, _, _}),                                      do: :this_network
-  defp _block({10, _, _, _}),                                     do: :rfc1918
-  defp _block({100, b, _, _}) when b > 63 and b < 128,            do: :rfc6598
-  defp _block({127, _, _, _}),                                    do: :loopback
-  defp _block({169, 254, _, _}),                                  do: :link_local
-  defp _block({172, b, _, _}) when b > 15 and b < 32,             do: :rfc1918
-  defp _block({192, 0, 0, _}),                                    do: :rfc5736
-  defp _block({192, 0, 2, 0}),                                    do: :rfc5737
-  defp _block({192, 88, 99, _}),                                  do: :rfc3068
-  defp _block({192, 168, _, _}),                                  do: :rfc1918
-  defp _block({198, b, _, _}) when b > 17 and b < 20,             do: :rfc2544
-  defp _block({198, 51, 100, _}),                                 do: :rfc5737
-  defp _block({203, 0, 113, _}),                                  do: :rfc5737
-  defp _block({a, _, _, _}) when a > 223 and a < 240,             do: :multicast
-  defp _block({a, _, _, d}) when a > 239 and a < 256 and d < 255, do: :future
-  defp _block({255, 255, 255, 255}),                              do: :limited_broadcast
-  defp _block(_),                                                 do: :public
+  defp which_block?({0, _, _, _}),                                      do: :this_network
+  defp which_block?({10, _, _, _}),                                     do: :rfc1918
+  defp which_block?({100, b, _, _}) when b > 63 and b < 128,            do: :rfc6598
+  defp which_block?({127, _, _, _}),                                    do: :loopback
+  defp which_block?({169, 254, _, _}),                                  do: :link_local
+  defp which_block?({172, b, _, _}) when b > 15 and b < 32,             do: :rfc1918
+  defp which_block?({192, 0, 0, _}),                                    do: :rfc5736
+  defp which_block?({192, 0, 2, 0}),                                    do: :rfc5737
+  defp which_block?({192, 88, 99, _}),                                  do: :rfc3068
+  defp which_block?({192, 168, _, _}),                                  do: :rfc1918
+  defp which_block?({198, b, _, _}) when b > 17 and b < 20,             do: :rfc2544
+  defp which_block?({198, 51, 100, _}),                                 do: :rfc5737
+  defp which_block?({203, 0, 113, _}),                                  do: :rfc5737
+  defp which_block?({a, _, _, _}) when a > 223 and a < 240,             do: :multicast
+  defp which_block?({a, _, _, d}) when a > 239 and a < 256 and d < 255, do: :future
+  defp which_block?({255, 255, 255, 255}),                              do: :limited_broadcast
+  defp which_block?(_),                                                 do: :public
 end

@@ -48,8 +48,6 @@
     
 
     
-      <li><a id="protocols-list" href="#full-list">Protocols</a></li>
-    
   </ul>
 
   <ul id="full-list" class="sidebar-fullList"></ul>
@@ -87,6 +85,22 @@ and a 4 element tuple.</p>
             Summary
           </h1>
           
+  <div class="summary-types summary">
+    <h2>
+      <a href="#types">Types</a>
+    </h2>
+    <div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:addr_struct/0">addr_struct()</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>The IP Address Struct</p>
+</div>
+  
+</div>
+
+  </div>
+
 
           
   <div class="summary-functions summary">
@@ -95,11 +109,47 @@ and a 4 element tuple.</p>
     </h2>
     <div class="summary-row">
   <div class="summary-signature">
+    <a href="#addr_to_bin/1">addr_to_bin(addr)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#addr_to_bits/1">addr_to_bits(addr)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#addr_to_hex/1">addr_to_hex(addr)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#addr_to_octets/1">addr_to_octets(addr)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="#address/1">address(addr)</a>
   </div>
   
     <div class="summary-synopsis"><p>Defines an IP Address struct</p>
 </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#block/1">block(addr)</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#valid?/1">valid?(addr)</a>
+  </div>
   
 </div>
 
@@ -114,6 +164,25 @@ and a 4 element tuple.</p>
       
 
       
+        <section id="types" class="types details-list">
+          <h1 class="section-heading">
+            <a class="hover-link" href="#types">
+              <i class="icon-link"></i>
+            </a>
+            Types
+          </h1>
+          <div class="types-list">
+            <div id="t:addr_struct/0" class="type-detail">
+  <pre><code class="elixir"><a href="#t:addr_struct/0">addr_struct</a> :: %IPA.Address{address: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, bin: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, bits: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, block: atom, hex: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, octets: tuple, version: non_neg_integer}</code></pre>
+  
+    <div class="typespec-doc"><p>The IP Address Struct</p>
+</div>
+  
+</div>
+
+          </div>
+        </section>
+      
 
       
         <section id="functions" class="details-list">
@@ -123,7 +192,59 @@ and a 4 element tuple.</p>
             </a>
             Functions
           </h1>
-          <div class="detail" id="address/1">
+          <div class="detail" id="addr_to_bin/1">
+  <div class="detail-header">
+    <a href="#addr_to_bin/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">addr_to_bin(addr)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="addr_to_bits/1">
+  <div class="detail-header">
+    <a href="#addr_to_bits/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">addr_to_bits(addr)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="addr_to_hex/1">
+  <div class="detail-header">
+    <a href="#addr_to_hex/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">addr_to_hex(addr)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="addr_to_octets/1">
+  <div class="detail-header">
+    <a href="#addr_to_octets/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">addr_to_octets(addr)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="address/1">
   <div class="detail-header">
     <a href="#address/1" class="detail-link" title="Link to this function">
       <i class="icon-link"></i>
@@ -136,7 +257,7 @@ and a 4 element tuple.</p>
       <h4 class="specs-title">Specs</h4>
       <div class="specs-list">
         
-          <pre><code class="elixir">address(<a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>) :: %IPA.Address{address: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, address_type: term, bin: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, bits: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, hex: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>, reserved: term, tuple: tuple, version: integer}</code></pre>
+          <pre><code class="elixir">address(<a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>) :: <a href="#t:addr_struct/0">addr_struct</a> | :invalid</code></pre>
         
       </div>
     </div>
@@ -148,17 +269,19 @@ and a 4 element tuple.</p>
 {:ok,
 %IPA.Address{address: &quot;192.168.0.1&quot;, address_type: nil,
 bin: &quot;0b11000000101010000000000000000001&quot;,
-bits: &quot;11000000.10101000.00000000.00000001&quot;, hex: &quot;0xC0A80001&quot;, reserved: nil,
-tuple: {192, 168, 0, 1}, version: 4}}
+bits: &quot;11000000.10101000.00000000.00000001&quot;, block: :rfc1918,
+hex: &quot;0xC0A80001&quot;, octets: {192, 168, 0, 1}, version: 4}}
 iex&gt; ip.address
 &quot;192.168.0.1&quot;
 iex&gt; ip.bin
 &quot;0b11000000101010000000000000000001&quot;
 iex&gt; ip.bits
 &quot;11000000.10101000.00000000.00000001&quot;
+iex&gt; ip.block
+:rfc1918
 iex&gt; ip.hex
 &quot;0xC0A80001&quot;
-iex&gt; ip.tuple
+iex&gt; ip.octets
 {192, 168, 0, 1}
 iex&gt; ip.version
 4
@@ -167,6 +290,32 @@ iex&gt; IPA.address(&quot;192.168.0.256&quot;)
 iex&gt; IPA.address(&quot;192.168.0&quot;)
 {:error, &quot;Not a valid ip address&quot;}</code></pre>
 
+  </section>
+</div>
+<div class="detail" id="block/1">
+  <div class="detail-header">
+    <a href="#block/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">block(addr)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
+  </section>
+</div>
+<div class="detail" id="valid?/1">
+  <div class="detail-header">
+    <a href="#valid?/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">valid?(addr)</span>
+      
+  </div>
+  
+  <section class="docstring">
+    
   </section>
 </div>
 
