@@ -68,22 +68,25 @@ defmodule IPA.Address do
   """
   @spec address(String.t) :: addr_struct | :invalid
   def address(addr) do
-    if valid?(addr) do
-      bin_worker = Task.async(__MODULE__, :to_binary, [addr])
-      bits_worker = Task.async(__MODULE__, :to_bits, [addr])
-      hex_worker = Task.async(__MODULE__, :to_hex, [addr])
-      octets_worker = Task.async(__MODULE__, :to_octets, [addr])
-      block_worker = Task.async(__MODULE__, :block, [addr])
+    cond do
+      valid?(addr) ->
+        bin_worker = Task.async(__MODULE__, :addr_to_bin, [addr])
+        bits_worker = Task.async(__MODULE__, :addr_to_bits, [addr])
+        hex_worker = Task.async(__MODULE__, :addr_to_hex, [addr])
+        octets_worker = Task.async(__MODULE__, :addr_to_octets, [addr])
+        block_worker = Task.async(__MODULE__, :block, [addr])
 
-      %IPA.Address{
-        address: addr,
-        bin: Task.await(bin_worker),
-        bits: Task.await(bits_worker),
-        hex: Task.await(hex_worker),
-        octets: Task.await(octets_worker),
-        block: Task.await(block_worker)}
-    else
-      :invalid
+        addr = %IPA.Address{
+          address: addr,
+          bin: Task.await(bin_worker),
+          bits: Task.await(bits_worker),
+          hex: Task.await(hex_worker),
+          octets: Task.await(octets_worker),
+          block: Task.await(block_worker)}
+
+        {:ok, addr}
+      true ->
+        {:error, :invalid_ipv4_address}
     end
   end
 
