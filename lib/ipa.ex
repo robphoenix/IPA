@@ -1,6 +1,7 @@
 defmodule IPA do
   @moduledoc """
-  Public API that delegates to internal functions
+  Module containing a delegated function for creating an
+  IP address struct, providing a slightly simpler API.
   """
 
   defdelegate address(addr), to: IPA.Address

@@ -1,26 +1,9 @@
 defmodule IPA.Address do
   @moduledoc """
-  Functions for defining an IP address struct from a valid IP address.
+  Functions for working with IP addresses.
 
-  The IP address struct contains the original dot-decimal
-  notation address, it's IP version, and the address as a
-  binary value, a hexadecimal value, a binary dot notation,
-  and a 4 element tuple.
+  Currently only compatible with IPv4 addresses.
   """
-
-  @typedoc """
-  The IP Address Struct
-  """
-  @type addr_struct :: %IPA.Address{
-    address: String.t,
-    version: non_neg_integer,
-    binary: String.t,
-    bits: String.t,
-    hex: String.t,
-    octets: tuple,
-    block: atom,
-    reserved: boolean}
-
 
   defstruct [
     address: nil,
@@ -39,7 +22,15 @@ defmodule IPA.Address do
   )\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/
 
   @doc """
-  Defines an IP Address struct.
+  Defines an IP Address struct which contains the original
+  dot-decimal notation address, it's IP version, whether it
+  is a reserved address or not, and which block of reserved
+  addresses it is a part of if it is a private address, and
+  the address as a binary value, a hexadecimal value, a binary
+  dot notation, and a 4 element tuple.
+
+  Returns {:ok, ip}, where ip is a struct, defined above,
+  or {:error, :invalid_ipv4_address} if the IP address is invalid.
 
   ## Example
 
@@ -51,7 +42,7 @@ defmodule IPA.Address do
       hex: "0xC0A80001", octets: {192, 168, 0, 1}, version: 4}}
       iex> ip.address
       "192.168.0.1"
-      iex> ip.bin
+      iex> ip.binary
       "0b11000000101010000000000000000001"
       iex> ip.bits
       "11000000.10101000.00000000.00000001"
@@ -63,16 +54,27 @@ defmodule IPA.Address do
       {192, 168, 0, 1}
       iex> ip.version
       4
+      iex> ip.reserved?
+      true
       iex> IPA.address("192.168.0.256")
-      {:error, "Not a valid ip address"}
+      {:error, :invalid_ipv4_address}
       iex> IPA.address("192.168.0")
-      {:error, "Not a valid ip address"}
+      {:error, :invalid_ipv4_address}
 
   """
-  @spec address(String.t) :: addr_struct | :invalid
+  @spec address(String.t) ::
+    {:ok, %IPA.Address{
+      address: String.t,
+      version: non_neg_integer,
+      binary: String.t,
+      bits: String.t,
+      hex: String.t,
+      octets: tuple,
+      block: atom,
+      reserved: boolean}} |
+    {:error, atom}
   def address(addr) do
-    cond do
-      valid?(addr) ->
+    if valid?(addr) do
         binary_worker = Task.async(__MODULE__, :to_binary, [addr])
         bits_worker = Task.async(__MODULE__, :to_bits, [addr])
         hex_worker = Task.async(__MODULE__, :to_hex, [addr])
@@ -87,33 +89,96 @@ defmodule IPA.Address do
           hex: Task.await(hex_worker),
           octets: Task.await(octets_worker),
           block: Task.await(block_worker),
-          reserved: Task.await(reserved_worker)
-        }
+        reserved: Task.await(reserved_worker)}
 
         {:ok, addr}
-      true ->
+      else
         {:error, :invalid_ipv4_address}
     end
   end
 
+  @doc """
+  Returns an IP Address struct which contains the original
+  dot-decimal notation address, it's IP version, whether it
+  is a reserved address or not, and which block of reserved
+  addresses it is a part of if it is a private address, and
+  the address as a binary value, a hexadecimal value, a binary
+  dot notation, and a 4 element tuple, or raises `IPError`
+  if an error occurs.
+  """
+  @spec address!(String.t) ::
+    %IPA.Address{
+      address: String.t,
+      version: non_neg_integer,
+      binary: String.t,
+      bits: String.t,
+      hex: String.t,
+      octets: tuple,
+      block: atom,
+      reserved: boolean}} |
+    no_return
+  def address!(addr) do
+    case address(addr) do
+      {:ok, ip} ->
+        ip
+      {:error, :invalid_ipv4_address} ->
+        raise IPError, message: "Invalid IPv4 address"
+    end
+  end
+
+  @doc """
+  Checks if the given address is a valid IP address.
+
+  Uses a regular expression to check there is exactly
+  4 integers between 0 & 255, inclusive, separated by dots.
+  Taken from [here](http://www.regular-expressions.info/numericranges.html). Therefore does not currently take into consideration
+  the fact that `127.1` can be considered a valid IP address
+  that translates to `127.0.0.1`.
+  """
+  @spec valid?(String.t) :: boolean
   def valid?(addr), do: Regex.match?(@addr_regex, addr)
 
-  # Convert the address from decimal to a "0b" prefixed binary number
+  @doc """
+  Convert a dot decimal IP address to a "0b" prefixed binary number.
+
+  ## Example
+
+      iex> IPA.Address.to_binary("192.168.0.1")
+      "0b11000000101010000000000000000001"
+  """
+  @spec to_binary(String.t) :: String.t
   def to_binary(addr) do
     addr
-    |> addr_to_list_of_bin
+    |> to_bin_list
     |> Enum.join()
     |> add_prefix("0b")
   end
 
-  # Convert address from decimal to binary bits
+  @doc """
+  Convert a dot decimal IP address to binary bits.
+
+  ## Example
+
+      iex> IPA.Address.to_bits("192.168.0.1")
+      "11000000.10101000.00000000.00000001"
+  """
+  @spec to_bits(String.t) :: String.t
   def to_bits(addr) do
     addr
-    |> addr_to_list_of_bin
+    |> to_bin_list
     |> Enum.join(".")
   end
 
-  # Convert address from decimal to hexadecimal
+  @doc """
+  Convert a dot decimal IP address to a "0x" prefixed hexadecimal
+  number.
+
+  ## Example
+
+      iex> IPA.Address.to_hex("192.168.0.1")
+      "0xC0A80001"
+  """
+  @spec to_hex(String.t) :: String.t
   def to_hex(addr) do
     addr
     |> convert_addr_base(16, 2)
@@ -121,7 +186,16 @@ defmodule IPA.Address do
     |> add_prefix("0x")
   end
 
-  # Convert address string to 4 element tuple
+  @doc """
+  Convert a dot decimal IP address to a 4 element tuple,
+  representing the given addresses 4 octets.
+
+  ## Example
+
+      iex> IPA.Address.to_octets("192.168.0.1")
+      {192, 168, 0, 1}
+  """
+  @spec to_octets(String.t) :: tuple(integer)
   def to_octets(addr) do
     addr
     |> String.split(".")
@@ -129,14 +203,37 @@ defmodule IPA.Address do
     |> List.to_tuple
   end
 
-  # Convert the address to a list of 4 binary numbers
-  # for use in `to_binary` & `to_bits`
-  defp addr_to_list_of_bin(addr) do
-    addr
-    |> convert_addr_base(2, 8)
+  @doc """
+  Checks whether a given IP address is reserved.
+  """
+  @spec reserved?(String.t) :: boolean
+  def reserved?(addr) do
+    case block(addr) do
+      :public -> false
+      _ -> true
+    end
   end
 
-  # Convert address to different numerical base, (ie. 2 for binary, 16 for hex),
+  @doc """
+  Defines which block of reserved addresses the given
+  address is a member of, or that it is a public address.
+
+  ## Examples
+
+      iex> IPA.Address.block("8.8.8.8")
+      :public
+      iex> IPA.Address.block("192.168.0.1")
+      :rfc1918
+      """
+  @spec block(String.t) :: atom
+  def block(addr) do
+    addr
+    |> to_octets
+    |> which_block?
+  end
+
+  # Convert address to different numerical base,
+  # (ie. 2 for binary, 16 for hex),
   # and then appropriately zero-pad the number
   defp convert_addr_base(addr, base, max_length) do
     addr
@@ -146,27 +243,18 @@ defmodule IPA.Address do
     |> Stream.map(&zero_pad(&1, max_length))
   end
 
+  # Convert the address to a list of 4 binary numbers
+  # for use in `to_binary` & `to_bits`
+  defp to_bin_list(addr), do: addr |> convert_addr_base(2, 8)
+
   # When numbers are converted from decimal to binary/hex
   # any leading zeroes are discarded, so we need to zero-pad
   # them to their expected length (ie. 8 for binary, 2 for hex)
-  defp zero_pad(n, max_length) when byte_size(n) == byte_size(max_length), do: n
-  defp zero_pad(n, max_length), do: String.rjust(n, max_length, ?0)
+  defp zero_pad(n, max_len) when byte_size(n) == byte_size(max_len), do: n
+  defp zero_pad(n, max_len), do: String.rjust(n, max_len, ?0)
 
   # Add numerical prefix (ie. "0b" for binary, "0x" for hex)
   defp add_prefix(str, prefix), do: prefix <> str
-
-  def reserved?(addr) do
-    case block(addr) do
-      :public -> false
-      _ -> true
-    end
-  end
-
-  def block(addr) do
-    addr
-    |> to_octets
-    |> which_block?
-  end
 
   defp which_block?({0, _, _, _}),                                      do: :this_network
   defp which_block?({10, _, _, _}),                                     do: :rfc1918

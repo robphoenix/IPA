@@ -1,6 +1,6 @@
 defmodule IPATest do
   use ExUnit.Case
-  #doctest IPA
+  doctest IPA.Address
 
   alias IPA.Address
 
