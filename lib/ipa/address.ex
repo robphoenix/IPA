@@ -36,10 +36,9 @@ defmodule IPA.Address do
 
       iex> {:ok, ip} = IPA.address("192.168.0.1")
       {:ok,
-      %IPA.Address{address: "192.168.0.1", address_type: nil,
-      bin: "0b11000000101010000000000000000001",
-      bits: "11000000.10101000.00000000.00000001", block: :rfc1918,
-      hex: "0xC0A80001", octets: {192, 168, 0, 1}, version: 4}}
+      %IPA.Address{address: "192.168.0.1", binary: "0b11000000101010000000000000000001",
+      bits: "11000000.10101000.00000000.00000001", block: :rfc1918, hex: "0xC0A80001", octets: {192, 168, 0, 1},
+      reserved: true, version: 4}}
       iex> ip.address
       "192.168.0.1"
       iex> ip.binary
@@ -54,7 +53,7 @@ defmodule IPA.Address do
       {192, 168, 0, 1}
       iex> ip.version
       4
-      iex> ip.reserved?
+      iex> ip.reserved
       true
       iex> IPA.address("192.168.0.256")
       {:error, :invalid_ipv4_address}
@@ -89,7 +88,7 @@ defmodule IPA.Address do
           hex: Task.await(hex_worker),
           octets: Task.await(octets_worker),
           block: Task.await(block_worker),
-        reserved: Task.await(reserved_worker)}
+          reserved: Task.await(reserved_worker)}
 
         {:ok, addr}
       else
@@ -115,7 +114,7 @@ defmodule IPA.Address do
       hex: String.t,
       octets: tuple,
       block: atom,
-      reserved: boolean}} |
+      reserved: boolean} |
     no_return
   def address!(addr) do
     case address(addr) do
@@ -131,7 +130,8 @@ defmodule IPA.Address do
 
   Uses a regular expression to check there is exactly
   4 integers between 0 & 255, inclusive, separated by dots.
-  Taken from [here](http://www.regular-expressions.info/numericranges.html). Therefore does not currently take into consideration
+  Taken from [here](http://www.regular-expressions.info/numericranges.html).
+  Therefore does not currently take into consideration
   the fact that `127.1` can be considered a valid IP address
   that translates to `127.0.0.1`.
   """
@@ -149,7 +149,7 @@ defmodule IPA.Address do
   @spec to_binary(String.t) :: String.t
   def to_binary(addr) do
     addr
-    |> to_bin_list
+    |> convert_addr_base(2, 8)
     |> Enum.join()
     |> add_prefix("0b")
   end
@@ -165,7 +165,7 @@ defmodule IPA.Address do
   @spec to_bits(String.t) :: String.t
   def to_bits(addr) do
     addr
-    |> to_bin_list
+    |> convert_addr_base(2, 8)
     |> Enum.join(".")
   end
 
@@ -195,7 +195,7 @@ defmodule IPA.Address do
       iex> IPA.Address.to_octets("192.168.0.1")
       {192, 168, 0, 1}
   """
-  @spec to_octets(String.t) :: tuple(integer)
+  @spec to_octets(String.t) :: {integer}
   def to_octets(addr) do
     addr
     |> String.split(".")
@@ -242,10 +242,6 @@ defmodule IPA.Address do
     |> Stream.map(&Integer.to_string(&1, base))
     |> Stream.map(&zero_pad(&1, max_length))
   end
-
-  # Convert the address to a list of 4 binary numbers
-  # for use in `to_binary` & `to_bits`
-  defp to_bin_list(addr), do: addr |> convert_addr_base(2, 8)
 
   # When numbers are converted from decimal to binary/hex
   # any leading zeroes are discarded, so we need to zero-pad
