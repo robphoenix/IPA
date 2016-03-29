@@ -11,23 +11,26 @@ defmodule IPA.Address do
   @typedoc """
   The IP Address Struct
   """
-  @type addr_struct :: %IPA.Address{address: String.t,
-                             version: non_neg_integer,
-                             bin: String.t,
-                             bits: String.t,
-                             hex: String.t,
-                             octets: tuple,
-                             block: atom}
+  @type addr_struct :: %IPA.Address{
+    address: String.t,
+    version: non_neg_integer,
+    binary: String.t,
+    bits: String.t,
+    hex: String.t,
+    octets: tuple,
+    block: atom,
+    reserved: boolean}
 
 
   defstruct [
     address: nil,
     version: 4,
-    bin: nil,
+    binary: nil,
     hex: nil,
     bits: nil,
     octets: nil,
     block: nil,
+    reserved: nil
   ]
 
   @addr_regex ~r/^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]\
@@ -70,19 +73,22 @@ defmodule IPA.Address do
   def address(addr) do
     cond do
       valid?(addr) ->
-        bin_worker = Task.async(__MODULE__, :addr_to_bin, [addr])
-        bits_worker = Task.async(__MODULE__, :addr_to_bits, [addr])
-        hex_worker = Task.async(__MODULE__, :addr_to_hex, [addr])
-        octets_worker = Task.async(__MODULE__, :addr_to_octets, [addr])
+        binary_worker = Task.async(__MODULE__, :to_binary, [addr])
+        bits_worker = Task.async(__MODULE__, :to_bits, [addr])
+        hex_worker = Task.async(__MODULE__, :to_hex, [addr])
+        octets_worker = Task.async(__MODULE__, :to_octets, [addr])
         block_worker = Task.async(__MODULE__, :block, [addr])
+        reserved_worker = Task.async(__MODULE__, :reserved?, [addr])
 
         addr = %IPA.Address{
           address: addr,
-          bin: Task.await(bin_worker),
+          binary: Task.await(binary_worker),
           bits: Task.await(bits_worker),
           hex: Task.await(hex_worker),
           octets: Task.await(octets_worker),
-          block: Task.await(block_worker)}
+          block: Task.await(block_worker),
+          reserved: Task.await(reserved_worker)
+        }
 
         {:ok, addr}
       true ->
@@ -148,6 +154,13 @@ defmodule IPA.Address do
 
   # Add numerical prefix (ie. "0b" for binary, "0x" for hex)
   defp add_prefix(str, prefix), do: prefix <> str
+
+  def reserved?(addr) do
+    case block(addr) do
+      :public -> false
+      _ -> true
+    end
+  end
 
   def block(addr) do
     addr
