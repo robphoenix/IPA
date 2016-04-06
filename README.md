@@ -145,6 +145,13 @@ Finished in 0.3 seconds (0.3s on load, 0.03s on tests)
 19 tests, 0 failures
 ```
 
+## Caveat
+
+Honestly, I don't know how much time I'm actually going to be able to dedicate
+to this project, so maybe think carefully before using it in production code
+(ha, high hopes!), but perhaps it can at least provide a starting point for
+something better?
+
 ## Contributing
 
 Please fork and send pull requests (preferably from non-master
