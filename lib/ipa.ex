@@ -5,4 +5,5 @@ defmodule IPA do
   """
 
   defdelegate address(addr), to: IPA.Address
+  defdelegate address!(addr), to: IPA.Address
 end
