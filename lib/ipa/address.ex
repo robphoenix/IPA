@@ -230,10 +230,10 @@ defmodule IPA.Address do
 
   ## Examples
 
-      iex> IPA.Address.block("8.8.8.8")
-      :public
-      iex> IPA.Address.block("192.168.0.1")
-      :rfc1918
+  iex> IPA.Address.block("8.8.8.8")
+  :public
+  iex> IPA.Address.block("192.168.0.1")
+  :rfc1918
   """
   @spec block(addr) :: atom
   def block(addr) do
