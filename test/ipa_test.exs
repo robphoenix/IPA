@@ -39,14 +39,14 @@ defmodule IPATest do
   end
 
   test "valid address" do
-    assert Address.valid?("192.168.0.1") == true
+    assert Address.valid?("192.168.0.1")
   end
 
   test "invalid addresses" do
-    assert Address.valid?("192.168.0.256") == false
-    assert Address.valid?("192.168.0") == false
-    assert Address.valid?("192.168.0.1.1") == false
-    assert Address.valid?("192.168.0.1.") == false
+    refute Address.valid?("192.168.0.256")
+    refute Address.valid?("192.168.0")
+    refute Address.valid?("192.168.0.1.1")
+    refute Address.valid?("192.168.0.1.")
   end
 
   test "dot decimal address to hex" do
@@ -66,26 +66,26 @@ defmodule IPATest do
   end
 
   test "public address is not reserved" do
-    assert Address.reserved?("8.8.8.8") == false
+    refute Address.reserved?("8.8.8.8")
   end
 
   test "private addresses are reserved" do
-    assert Address.reserved?("0.0.0.0") == true
-    assert Address.reserved?("10.0.0.0") == true
-    assert Address.reserved?("100.64.0.0") == true
-    assert Address.reserved?("127.0.0.0") == true
-    assert Address.reserved?("169.254.0.0") == true
-    assert Address.reserved?("172.16.0.0") == true
-    assert Address.reserved?("192.0.0.0") == true
-    assert Address.reserved?("192.0.2.0") == true
-    assert Address.reserved?("192.88.99.0") == true
-    assert Address.reserved?("192.168.0.0") == true
-    assert Address.reserved?("198.18.0.0") == true
-    assert Address.reserved?("198.51.100.0") == true
-    assert Address.reserved?("203.0.113.0") == true
-    assert Address.reserved?("224.0.0.0") == true
-    assert Address.reserved?("240.0.0.0") == true
-    assert Address.reserved?("255.255.255.255") == true
-    assert Address.reserved?("0.0.0.0") == true
+    assert Address.reserved?("0.0.0.0")
+    assert Address.reserved?("10.0.0.0")
+    assert Address.reserved?("100.64.0.0")
+    assert Address.reserved?("127.0.0.0")
+    assert Address.reserved?("169.254.0.0")
+    assert Address.reserved?("172.16.0.0")
+    assert Address.reserved?("192.0.0.0")
+    assert Address.reserved?("192.0.2.0")
+    assert Address.reserved?("192.88.99.0")
+    assert Address.reserved?("192.168.0.0")
+    assert Address.reserved?("198.18.0.0")
+    assert Address.reserved?("198.51.100.0")
+    assert Address.reserved?("203.0.113.0")
+    assert Address.reserved?("224.0.0.0")
+    assert Address.reserved?("240.0.0.0")
+    assert Address.reserved?("255.255.255.255")
+    assert Address.reserved?("0.0.0.0")
   end
 end

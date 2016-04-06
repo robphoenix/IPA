@@ -61,7 +61,7 @@ ip.reserved
 You can also use `IPA.address!/1` to access the same data:
 
 ```elixir
-ip = IPA.Address("192.168.0.1")
+ip = IPA.Address!("192.168.0.1")
 # => %IPA.Address{...}
 ```
 

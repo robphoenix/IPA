@@ -350,38 +350,38 @@ iex&gt; IPA.address(&quot;192.168.0&quot;)
     <p>Returns an atom describing which reserved block the address is a member of if it is a private address, returns <code class="inline">:public</code> otherwise.</p>
 <p><a href="https://en.wikipedia.org/wiki/Reserved_IP_addresses">Available blocks</a>:</p>
 <ul>
-<li><code class="inline">:this_network</code> - (<code class="inline">0.0.0.0/8</code>) Used for broadcast messages to the current (“this”) network as specified by RFC 1700, page 4.
+<li><code class="inline">:this_network</code> - <code class="inline">0.0.0.0/8</code> Used for broadcast messages to the current “this” network as specified by RFC 1700, page 4.
 </li>
-<li><code class="inline">:rfc1918</code> - (<code class="inline">10.0.0.0/8</code>, <code class="inline">172.16.0.0/12</code> &amp; <code class="inline">192.168.0.0/16</code>) Used for local communications within a private network as specified by RFC 1918.
+<li><code class="inline">:rfc1918</code> - <code class="inline">10.0.0.0/8</code>, <code class="inline">172.16.0.0/12</code> &amp; <code class="inline">192.168.0.0/16</code> Used for local communications within a private network as specified by RFC 1918.
 </li>
-<li><code class="inline">:rfc6598</code> - (<code class="inline">100.64.0.0/10</code>) Used for communications between a service provider and its subscribers when using a Carrier-grade NAT, as specified by RFC 6598.
+<li><code class="inline">:rfc6598</code> - <code class="inline">100.64.0.0/10</code> Used for communications between a service provider and its subscribers when using a Carrier-grade NAT, as specified by RFC 6598.
 </li>
-<li><code class="inline">:loopback</code> - (<code class="inline">127.0.0.0/8</code>) Used for loopback addresses to the local host, as specified by RFC 990.
+<li><code class="inline">:loopback</code> - <code class="inline">127.0.0.0/8</code> Used for loopback addresses to the local host, as specified by RFC 990.
 </li>
-<li><code class="inline">:link_local</code> - (<code class="inline">169.254.0.0/16</code>) Used for link-local addresses between two hosts on a single link when no IP address is otherwise specified, such as would have normally been retrieved from a DHCP server, as specified by RFC 3927.
+<li><code class="inline">:link_local</code> - <code class="inline">169.254.0.0/16</code> Used for link-local addresses between two hosts on a single link when no IP address is otherwise specified, such as would have normally been retrieved from a DHCP server, as specified by RFC 3927.
 </li>
-<li><code class="inline">:rfc5736</code> - (<code class="inline">192.0.0.0/24</code>) Used for the IANA IPv4 Special Purpose Address Registry as specified by RFC 5736.
+<li><code class="inline">:rfc5736</code> - <code class="inline">192.0.0.0/24</code> Used for the IANA IPv4 Special Purpose Address Registry as specified by RFC 5736.
 </li>
-<li><code class="inline">:rfc5737</code> - (<code class="inline">192.0.2.0/24</code>, <code class="inline">198.51.100.0/24</code> &amp; <code class="inline">203.0.113.0/24</code>) Assigned as “TEST-NET” in RFC 5737 for use solely in documentation and example source code and should not be used publicly.
+<li><code class="inline">:rfc5737</code> - <code class="inline">192.0.2.0/24</code>, <code class="inline">198.51.100.0/24</code> &amp; <code class="inline">203.0.113.0/24</code> Assigned as “TEST-NET” in RFC 5737 for use solely in documentation and example source code and should not be used publicly.
 </li>
-<li><code class="inline">:rfc3068</code> - (<code class="inline">192.88.99.0/24</code>) Used by 6to4 anycast relays as specified by RFC 3068.
+<li><code class="inline">:rfc3068</code> - <code class="inline">192.88.99.0/24</code> Used by 6to4 anycast relays as specified by RFC 3068.
 </li>
-<li><code class="inline">:rfc2544</code> - (<code class="inline">198.18.0.0/15</code>) Used for testing of inter-network communications between two separate subnets as specified in RFC 2544.
+<li><code class="inline">:rfc2544</code> - <code class="inline">198.18.0.0/15</code> Used for testing of inter-network communications between two separate subnets as specified in RFC 2544.
 </li>
-<li><code class="inline">:multicast</code> - (<code class="inline">224.0.0.0/4</code>) Reserved for multicast assignments as specified in RFC 5771. <code class="inline">233.252.0.0/24</code> is assigned as “MCAST-TEST-NET” for use solely in documentation and example source code.
+<li><code class="inline">:multicast</code> - <code class="inline">224.0.0.0/4</code> Reserved for multicast assignments as specified in RFC 5771. <code class="inline">233.252.0.0/24</code> is assigned as “MCAST-TEST-NET” for use solely in documentation and example source code.
 </li>
-<li><code class="inline">:future</code> - (<code class="inline">240.0.0.0/4</code>) Reserved for future use, as specified by RFC 6890.
+<li><code class="inline">:future</code> - <code class="inline">240.0.0.0/4</code> Reserved for future use, as specified by RFC 6890.
 </li>
-<li><code class="inline">:limited_broadcast</code> - (<code class="inline">255.255.255.255/32</code>) Reserved for the “limited broadcast” destination address, as specified by RFC 6890.
+<li><code class="inline">:limited_broadcast</code> - <code class="inline">255.255.255.255/32</code> Reserved for the “limited broadcast” destination address, as specified by RFC 6890.
 </li>
 <li><code class="inline">:public</code> - All other addresses are public.
 </li>
 </ul>
 <h2>Examples</h2>
-<pre><code class="iex elixir">iex&gt; IPA.Address.block(&quot;8.8.8.8&quot;)
+<p>iex&gt; IPA.Address.block(“8.8.8.8”)
 :public
-iex&gt; IPA.Address.block(&quot;192.168.0.1&quot;)
-:rfc1918</code></pre>
+iex&gt; IPA.Address.block(“192.168.0.1”)
+:rfc1918</p>
 
   </section>
 </div>
