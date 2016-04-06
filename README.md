@@ -27,7 +27,7 @@ This library was initially a direct port of Python's
 [netaddr](https://github.com/drkjam/netaddr) library as a means to learning
 Elixir.
 
-As such, it enables the creation of an ip address struct, using the
+As such, it enables the creation of an IP address struct, using the
 `IPA.address/1` function.  All the functions in this library expect the IP
 address to be given as a string.
 
