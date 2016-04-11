@@ -7,7 +7,10 @@ defmodule IPA do
 
   @type ip :: String.t | non_neg_integer
 
-  @addr_regex ~r/^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/
+  @addr_regex ~r/^(([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.){3}
+                   ([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/x
+
+  @mask_regex ~r/^((1|0){1,8}\.){3}(1|0){1,8}$/
 
   @doc """
   Checks if the given address is a valid IP address.
@@ -28,7 +31,40 @@ defmodule IPA do
         false
     end
   end
-  def valid?(addr), do: Regex.match?(@addr_regex, addr)
+  def valid?(addr) do
+    if Regex.match?(@addr_regex, addr) do
+      true
+    else
+      cond do
+        initial_binary_validation(addr) ->
+          addr
+          |> String.split(".")
+          |> Stream.map(&String.to_integer(&1, 2))
+          |> Enum.join(".")
+          |> valid?
+        true ->
+          false
+      end
+    end
+  end
+
+  defp initial_binary_validation(addr) do
+    if Regex.match?(@mask_regex, addr) do
+      [h|t] = addr |> String.replace(".", "") |> String.to_char_list
+      do_initial_binary_validation(h, t, [])
+    else
+      false
+    end
+  end
+  defp do_initial_binary_validation(_, [], _), do: true
+  defp do_initial_binary_validation(?0, _, []), do: false
+  defp do_initial_binary_validation(?1, _, ?0), do: false
+  defp do_initial_binary_validation(?1, [h|t], _) do
+    do_initial_binary_validation(h, t, ?1)
+  end
+  defp do_initial_binary_validation(?0, [h|t], _) do
+    do_initial_binary_validation(h, t, ?0)
+  end
 
   @doc """
   Converts a slash notation subnet mask to a dotted decimal subnet mask
@@ -39,11 +75,12 @@ defmodule IPA do
       "255.255.255.0"
   """
   @spec to_dotted_dec(String.t) :: String.t
-  def to_dotted_dec(mask) do
+  def to_dotted_dec(mask) when is_integer(mask) do
     mask
     |> validate_and_transform_to_int_list
     |> Enum.join(".")
   end
+  ## TODO add IPA.to_dotted_dec("11111111.11111111.000000000.00000000") => "255.255.0.0"
 
 
   @doc """
@@ -119,18 +156,31 @@ defmodule IPA do
     |> List.to_tuple
   end
 
+  ## TODO docs
   def to_slash(mask) do
-or
- mask |> split(".") |> transform_to_slash
-
-    mask
-    |> Stream.map(&String.to_integer/1)
-    |> Stream.map(&Integer.to_string(2))
-    |> transform_to_slash
+    cond do
+      Regex.match?(@mask_regex, mask) ->
+        cond do
+          valid?(mask) ->
+            mask
+            |> String.replace(".", "")
+            |> transform_to_slash
+          true ->
+            raise SubnetError
+        end
+     true ->
+        mask
+        |> validate_and_transform_to_int_list
+        |> Enum.map(&Integer.to_string(&1, 2))
+        |> Enum.join
+        |> transform_to_slash
+    end
   end
 
-  defp transform_to_slash(bin_list) do
-    turn list into one string and count the ones
+  defp transform_to_slash(bin) do
+    bin
+    |> String.strip(?0)
+    |> String.length
   end
 
   @doc """
@@ -188,6 +238,7 @@ or
     else
       raise SubnetError
     end
+  end
   defp validate_and_transform_to_int_list(addr) do
     if valid?(addr) do
       for n <- String.split(addr, "."), do: String.to_integer(n)
