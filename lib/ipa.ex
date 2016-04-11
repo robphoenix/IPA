@@ -7,10 +7,8 @@ defmodule IPA do
 
   @type addr :: String.t
 
-  @addr_regex ~r/^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]\
-  )\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]\
-  )\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]\
-  )\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/
+  @addr_regex ~r/^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/
+
 
   @doc """
   Checks if the given address is a valid IP address.
@@ -36,9 +34,8 @@ defmodule IPA do
   @spec to_binary(addr) :: String.t
   def to_binary(addr) do
     addr
-    |> convert_addr_base(2, 8)
-    |> Enum.join()
-    |> add_prefix("0b")
+    |> validate_and_transform_to_int_list
+    |> transform_addr(2, 8, "", "0b")
   end
 
   @doc """
@@ -52,8 +49,8 @@ defmodule IPA do
   @spec to_bits(addr) :: String.t
   def to_bits(addr) do
     addr
-    |> convert_addr_base(2, 8)
-    |> Enum.join(".")
+    |> validate_and_transform_to_int_list
+    |> transform_addr(2, 8, ".", "")
   end
 
   @doc """
@@ -68,9 +65,8 @@ defmodule IPA do
   @spec to_hex(addr) :: String.t
   def to_hex(addr) do
     addr
-    |> convert_addr_base(16, 2)
-    |> Enum.join()
-    |> add_prefix("0x")
+    |> validate_and_transform_to_int_list
+    |> transform_addr(16, 2, "", "0x")
   end
 
   @doc """
@@ -85,8 +81,7 @@ defmodule IPA do
   @spec to_octets(addr) :: {integer}
   def to_octets(addr) do
     addr
-    |> String.split(".")
-    |> Enum.map(&String.to_integer/1)
+    |> validate_and_transform_to_int_list
     |> List.to_tuple
   end
 
@@ -134,15 +129,25 @@ defmodule IPA do
     |> which_block?
   end
 
+  # check if address is valid, and if it is transform
+  # it into a list of integers.
+  defp validate_and_transform_to_int_list(addr) do
+    if valid?(addr) do
+      for n <- String.split(addr, "."), do: String.to_integer(n)
+    else
+      raise IPError
+    end
+  end
+
   # Convert address to different numerical base,
-  # (ie. 2 for binary, 16 for hex),
-  # and then appropriately zero-pad the number
-  defp convert_addr_base(addr, base, max_length) do
+  # (ie. 2 for binary, 16 for hex), zero-pads
+  # joins and adds a prefix
+  defp transform_addr(addr, base, max_length, joiner, prefix) do
     addr
-    |> String.split(".")
-    |> Stream.map(&String.to_integer(&1))
     |> Stream.map(&Integer.to_string(&1, base))
     |> Stream.map(&zero_pad(&1, max_length))
+    |> Enum.join(joiner)
+    |> String.replace_prefix("", prefix)
   end
 
   # When numbers are converted from decimal to binary/hex
@@ -150,9 +155,6 @@ defmodule IPA do
   # them to their expected length (ie. 8 for binary, 2 for hex)
   defp zero_pad(n, max_len) when byte_size(n) == byte_size(max_len), do: n
   defp zero_pad(n, max_len), do: String.rjust(n, max_len, ?0)
-
-  # Add numerical prefix (ie. "0b" for binary, "0x" for hex)
-  defp add_prefix(str, prefix), do: prefix <> str
 
   defp which_block?({0, _, _, _}),                                      do: :this_network
   defp which_block?({10, _, _, _}),                                     do: :rfc1918
