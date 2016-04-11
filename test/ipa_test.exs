@@ -48,6 +48,19 @@ defmodule IPATest do
     end
   end
 
+  test "slash notation subnet mask to binary" do
+    assert IPA.to_binary(24) == "0b11111111111111111111111100000000"
+  end
+
+  test "invalid slash notation subnet mask raises error" do
+    assert_raise SubnetError, "Invalid Subnet Mask", fn ->
+      IPA.to_binary(-1)
+    end
+    assert_raise SubnetError, "Invalid Subnet Mask", fn ->
+      IPA.to_binary(33)
+    end
+  end
+
   test "dot decimal address to octets" do
     assert IPA.to_octets(@valid_ip) == {192, 168, 0, 1}
   end

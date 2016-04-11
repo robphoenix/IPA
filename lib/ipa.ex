@@ -5,10 +5,9 @@ defmodule IPA do
   Currently only compatible with IPv4 addresses.
   """
 
-  @type addr :: String.t
+  @type ip :: String.t | non_neg_integer
 
   @addr_regex ~r/^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/
-
 
   @doc """
   Checks if the given address is a valid IP address.
@@ -20,18 +19,47 @@ defmodule IPA do
   the fact that `127.1` can be considered a valid IP address
   that translates to `127.0.0.1`.
   """
-  @spec valid?(addr) :: boolean
+  @spec valid?(ip) :: boolean
+  def valid?(mask) when is_integer(mask) do
+    case mask do
+      mask when mask > 0 and mask < 33 ->
+        true
+      _ ->
+        false
+    end
+  end
   def valid?(addr), do: Regex.match?(@addr_regex, addr)
 
   @doc """
-  Converts a dot decimal IP address to a `0b` prefixed binary number.
+  Converts a slash notation subnet mask to a dotted decimal subnet mask
+
+  ## Example
+
+      iex> IPA.to_dotted_dec(24)
+      "255.255.255.0"
+  """
+  @spec to_dotted_dec(String.t) :: String.t
+  def to_dotted_dec(mask) do
+    mask
+    |> validate_and_transform_to_int_list
+    |> Enum.join(".")
+  end
+
+
+  @doc """
+  Converts a dot decimal IP address/Subnet Mask, or a slash
+  notation numerical Subnet Mask to a `0b` prefixed binary number.
 
   ## Example
 
       iex> IPA.to_binary("192.168.0.1")
       "0b11000000101010000000000000000001"
+      iex> IPA.to_binary("255.255.255.0")
+      "0b11111111111111111111111100000000"
+      iex> IPA.to_binary(24)
+      "0b11111111111111111111111100000000"
   """
-  @spec to_binary(addr) :: String.t
+  @spec to_binary(ip) :: String.t
   def to_binary(addr) do
     addr
     |> validate_and_transform_to_int_list
@@ -39,22 +67,28 @@ defmodule IPA do
   end
 
   @doc """
-  Converts a dot decimal IP address to binary bits.
+  Converts a dot decimal IP address/Subnet Mask, or a slash
+  notation numerical Subnet Mask to binary bits.
 
   ## Example
 
       iex> IPA.to_bits("192.168.0.1")
       "11000000.10101000.00000000.00000001"
+      iex> IPA.to_bits("255.255.255.0")
+      "11111111.11111111.11111111.00000000"
+      iex> IPA.to_bits(24)
+      "11111111.11111111.11111111.00000000"
   """
-  @spec to_bits(addr) :: String.t
-  def to_bits(addr) do
+  @spec to_bits(ip) :: String.t
+  def to_bits(addr)  do
     addr
     |> validate_and_transform_to_int_list
     |> transform_addr(2, 8, ".", "")
   end
 
   @doc """
-  Converts a dot decimal IP address to a `0x` prefixed hexadecimal
+  Converts a dot decimal IP address/Subnet Mask, or a slash
+  notation numerical Subnet Mask to a `0x` prefixed hexadecimal
   number.
 
   ## Example
@@ -62,7 +96,7 @@ defmodule IPA do
       iex> IPA.to_hex("192.168.0.1")
       "0xC0A80001"
   """
-  @spec to_hex(addr) :: String.t
+  @spec to_hex(ip) :: String.t
   def to_hex(addr) do
     addr
     |> validate_and_transform_to_int_list
@@ -78,17 +112,31 @@ defmodule IPA do
       iex> IPA.to_octets("192.168.0.1")
       {192, 168, 0, 1}
   """
-  @spec to_octets(addr) :: {integer}
+  @spec to_octets(String.t) :: {integer}
   def to_octets(addr) do
     addr
     |> validate_and_transform_to_int_list
     |> List.to_tuple
   end
 
+  def to_slash(mask) do
+or
+ mask |> split(".") |> transform_to_slash
+
+    mask
+    |> Stream.map(&String.to_integer/1)
+    |> Stream.map(&Integer.to_string(2))
+    |> transform_to_slash
+  end
+
+  defp transform_to_slash(bin_list) do
+    turn list into one string and count the ones
+  end
+
   @doc """
   Checks whether a given IP address is reserved.
   """
-  @spec reserved?(addr) :: boolean
+  @spec reserved?(String.t) :: boolean
   def reserved?(addr) do
     case block(addr) do
       :public -> false
@@ -122,7 +170,7 @@ defmodule IPA do
   iex> IPA.block("192.168.0.1")
   :rfc1918
   """
-  @spec block(addr) :: atom
+  @spec block(String.t) :: atom
   def block(addr) do
     addr
     |> to_octets
@@ -131,6 +179,15 @@ defmodule IPA do
 
   # check if address is valid, and if it is transform
   # it into a list of integers.
+  defp validate_and_transform_to_int_list(mask) when is_integer(mask) do
+    if valid?(mask) do
+      no_of_eight_bits = div(mask, 8)
+      further_bits  = rem(mask, 8)
+      octets_list = List.duplicate(255, no_of_eight_bits) ++ decode_mask_bits(further_bits)
+      add_zero_bits(octets_list)
+    else
+      raise SubnetError
+    end
   defp validate_and_transform_to_int_list(addr) do
     if valid?(addr) do
       for n <- String.split(addr, "."), do: String.to_integer(n)
@@ -139,22 +196,37 @@ defmodule IPA do
     end
   end
 
+  defp add_zero_bits(octets_list) when length(octets_list) == 4, do: octets_list
+  defp add_zero_bits(octets_list) do
+    add_zero_bits(octets_list ++ [0])
+  end
+
+  defp decode_mask_bits(0), do: []
+  defp decode_mask_bits(1), do: [128]
+  defp decode_mask_bits(2), do: [192]
+  defp decode_mask_bits(3), do: [224]
+  defp decode_mask_bits(4), do: [240]
+  defp decode_mask_bits(5), do: [248]
+  defp decode_mask_bits(6), do: [252]
+  defp decode_mask_bits(7), do: [254]
+  defp decode_mask_bits(8), do: [255]
+
   # Convert address to different numerical base,
-  # (ie. 2 for binary, 16 for hex), zero-pads
+  # (ie. 2 for binary, 16 for hex), left-pads,
   # joins and adds a prefix
   defp transform_addr(addr, base, max_length, joiner, prefix) do
     addr
     |> Stream.map(&Integer.to_string(&1, base))
-    |> Stream.map(&zero_pad(&1, max_length))
+    |> Stream.map(&left_pad(&1, max_length, ?0))
     |> Enum.join(joiner)
     |> String.replace_prefix("", prefix)
   end
 
   # When numbers are converted from decimal to binary/hex
-  # any leading zeroes are discarded, so we need to zero-pad
+  # any leading zeroes are discarded, so we need to left-pad
   # them to their expected length (ie. 8 for binary, 2 for hex)
-  defp zero_pad(n, max_len) when byte_size(n) == byte_size(max_len), do: n
-  defp zero_pad(n, max_len), do: String.rjust(n, max_len, ?0)
+  defp left_pad(n, max_len, _) when byte_size(n) == byte_size(max_len), do: n
+  defp left_pad(n, max_len, char), do: String.rjust(n, max_len, char)
 
   defp which_block?({0, _, _, _}),                                      do: :this_network
   defp which_block?({10, _, _, _}),                                     do: :rfc1918
