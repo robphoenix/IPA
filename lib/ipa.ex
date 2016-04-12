@@ -5,7 +5,9 @@ defmodule IPA do
   Currently only compatible with IPv4 addresses.
   """
 
-  @type ip :: String.t | non_neg_integer
+  @type ip :: addr | mask
+  @type addr :: String.t
+  @type mask :: String.t | non_neg_integer
 
   @addr_regex ~r/^(([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.){3}
                    ([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/x
@@ -13,7 +15,7 @@ defmodule IPA do
   @mask_regex ~r/^((1|0){1,8}\.){3}(1|0){1,8}$/
 
   @doc """
-  Checks if the given address is a valid IP address.
+  Checks if the given dotted decimal IP address is valid.
 
   Uses a regular expression to check there is exactly
   4 integers between 0 & 255, inclusive, separated by dots.
@@ -21,70 +23,94 @@ defmodule IPA do
   Therefore does not currently take into consideration
   the fact that `127.1` can be considered a valid IP address
   that translates to `127.0.0.1`.
+
+  ## Examples
+
+      iex> IPA.valid_address?("192.168.0.1")
+      true
+      iex> IPA.valid_address?("8.8.8.8")
+      true
+      iex> IPA.valid_address?("10.0.0.256")
+      false
+      iex> IPA.valid_address?("10.0.0.")
+      false
   """
-  @spec valid?(ip) :: boolean
-  def valid?(mask) when is_integer(mask) do
+  @spec valid_address?(addr) :: boolean
+  def valid_address?(addr), do: Regex.match?(@addr_regex, addr)
+
+  @doc """
+  Checks if the given subnet mask is valid.
+
+  Works with slash notation, as well as dotted decimal and
+  dotted binary.
+
+  ## Examples
+
+      iex> IPA.valid_mask?(24)
+      true
+      iex> IPA.valid_mask?(33)
+      false
+      iex> IPA.valid_mask?("255.255.255.0")
+      true
+      iex> IPA.valid_mask?("192.168.0.1")
+      false
+      iex> IPA.valid_mask?("11111111.11111111.11111111.00000000")
+      true
+      iex> IPA.valid_mask?("10101000.10101000.00000000.00000000")
+      false
+  """
+  @spec valid_mask?(mask) :: boolean
+  def valid_mask?(mask) when is_integer(mask) do
     case mask do
-      mask when mask > 0 and mask < 33 ->
-        true
-      _ ->
-        false
+      mask when mask > 0 and mask < 33 -> true
+      _ -> false
     end
   end
-  def valid?(addr) do
-    if Regex.match?(@addr_regex, addr) do
-      true
+  def valid_mask?(mask) do
+    if Regex.match?(@mask_regex, mask) do
+      [h|t] = mask |> String.replace(".", "") |> String.to_char_list
+      binary_validation(h, t, [])
     else
-      cond do
-        initial_binary_validation(addr) ->
-          addr
-          |> String.split(".")
-          |> Stream.map(&String.to_integer(&1, 2))
-          |> Enum.join(".")
-          |> valid?
-        true ->
-          false
-      end
+      [h|t] = mask
+      |> String.split(".")
+      |> Stream.map(&String.to_integer/1)
+      |> Stream.map(&Integer.to_string(&1, 2))
+      |> Enum.join
+      |> String.to_char_list
+
+      binary_validation(h, t, [])
     end
   end
 
-  defp initial_binary_validation(addr) do
-    if Regex.match?(@mask_regex, addr) do
-      [h|t] = addr |> String.replace(".", "") |> String.to_char_list
-      do_initial_binary_validation(h, t, [])
-    else
-      false
-    end
+  # Check to make sure that 1s don't follow 0s
+  # or that the mask doesn't start with a 0
+  defp binary_validation(_, [], _), do: true
+  defp binary_validation(?0, _, []), do: false
+  defp binary_validation(?1, _, ?0), do: false
+  defp binary_validation(?1, [h|t], _) do
+    binary_validation(h, t, ?1)
   end
-  defp do_initial_binary_validation(_, [], _), do: true
-  defp do_initial_binary_validation(?0, _, []), do: false
-  defp do_initial_binary_validation(?1, _, ?0), do: false
-  defp do_initial_binary_validation(?1, [h|t], _) do
-    do_initial_binary_validation(h, t, ?1)
-  end
-  defp do_initial_binary_validation(?0, [h|t], _) do
-    do_initial_binary_validation(h, t, ?0)
+  defp binary_validation(?0, [h|t], _) do
+    binary_validation(h, t, ?0)
   end
 
   @doc """
-  Converts a slash notation subnet mask to a dotted decimal subnet mask
+  Converts slash notation to dotted decimal.
 
   ## Example
 
       iex> IPA.to_dotted_dec(24)
       "255.255.255.0"
   """
-  @spec to_dotted_dec(String.t) :: String.t
+  @spec to_dotted_dec(ip) :: String.t
   def to_dotted_dec(mask) when is_integer(mask) do
     mask
     |> validate_and_transform_to_int_list
     |> Enum.join(".")
   end
-  ## TODO add IPA.to_dotted_dec("11111111.11111111.000000000.00000000") => "255.255.0.0"
-
 
   @doc """
-  Converts a dot decimal IP address/Subnet Mask, or a slash
+  Converts a dotted decimal IP address/Subnet Mask, or a slash
   notation numerical Subnet Mask to a `0b` prefixed binary number.
 
   ## Example
@@ -141,30 +167,42 @@ defmodule IPA do
   end
 
   @doc """
-  Converst a dot decimal IP address to a 4 element tuple,
-  representing the given addresses 4 octets.
+  Converts a dotted decimal IP address or Subnet Mask, or a
+  slash notation Subnet Mask, to a 4 element tuple, representing
+  the 4 octets.
 
   ## Example
 
       iex> IPA.to_octets("192.168.0.1")
       {192, 168, 0, 1}
+      iex> IPA.to_octets("255.255.255.0")
+      {255, 255, 255, 0}
+      iex> IPA.to_octets(24)
+      {255, 255, 255, 0}
   """
-  @spec to_octets(String.t) :: {integer}
-  def to_octets(addr) do
-    addr
+  @spec to_octets(ip) :: {integer}
+  def to_octets(ip) do
+    ip
     |> validate_and_transform_to_int_list
     |> List.to_tuple
   end
 
-  ## TODO docs
-  def to_slash(mask) do
+  @doc """
+  Converts a dotted decimal Subnet Mask to CIDR notation.
+
+  ## Examples
+
+      iex> IPA.to_cidr("255.255.255.0")
+      24
+  """
+  def to_cidr(mask) do
     cond do
       Regex.match?(@mask_regex, mask) ->
         cond do
-          valid?(mask) ->
+          valid_mask?(mask) ->
             mask
             |> String.replace(".", "")
-            |> transform_to_slash
+            |> transform_to_cidr
           true ->
             raise SubnetError
         end
@@ -173,11 +211,11 @@ defmodule IPA do
         |> validate_and_transform_to_int_list
         |> Enum.map(&Integer.to_string(&1, 2))
         |> Enum.join
-        |> transform_to_slash
+        |> transform_to_cidr
     end
   end
 
-  defp transform_to_slash(bin) do
+  defp transform_to_cidr(bin) do
     bin
     |> String.strip(?0)
     |> String.length
@@ -230,17 +268,15 @@ defmodule IPA do
   # check if address is valid, and if it is transform
   # it into a list of integers.
   defp validate_and_transform_to_int_list(mask) when is_integer(mask) do
-    if valid?(mask) do
-      no_of_eight_bits = div(mask, 8)
-      further_bits  = rem(mask, 8)
-      octets_list = List.duplicate(255, no_of_eight_bits) ++ decode_mask_bits(further_bits)
-      add_zero_bits(octets_list)
+    if valid_mask?(mask) do
+      (List.duplicate(255, div(mask, 8)) ++ decode_mask_bits(rem(mask, 8)))
+      |> add_zero_bits
     else
       raise SubnetError
     end
   end
   defp validate_and_transform_to_int_list(addr) do
-    if valid?(addr) do
+    if valid_address?(addr) do
       for n <- String.split(addr, "."), do: String.to_integer(n)
     else
       raise IPError

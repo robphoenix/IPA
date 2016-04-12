@@ -4,47 +4,60 @@ defmodule IPATest do
 
   ExUnit.configure trace: true
 
-  @valid_ip "192.168.0.1"
-  @invalid_ip "192.168.0.256"
-
   test "valid address" do
-    assert IPA.valid?(@valid_ip)
+    assert IPA.valid_address?("192.168.0.1")
+  end
+
+  test "valid subnet mask" do
+    assert IPA.valid_mask?(24)
+    assert IPA.valid_mask?("255.255.255.0")
+    assert IPA.valid_mask?("11111111.11111111.11111111.00000000")
   end
 
   test "invalid addresses" do
-    refute IPA.valid?(@invalid_ip)
-    refute IPA.valid?("192.168.0")
-    refute IPA.valid?("192.168.0.1.1")
-    refute IPA.valid?("192.168.0.1.")
+    refute IPA.valid_address?("192.168.256.256")
+    refute IPA.valid_address?("192.168.0")
+    refute IPA.valid_address?("192.168.0.1.1")
+    refute IPA.valid_address?("192.168.0.1.")
+  end
+
+  test "invalid subnet masks" do
+    refute IPA.valid_mask?("11111111.00000000.11111111.00000000")
+    refute IPA.valid_mask?("10101000.10101000.10101000.10101000")
+    refute IPA.valid_mask?("00000000.00000000.00000000.00000000")
+    refute IPA.valid_mask?("192.168.0.1")
+    refute IPA.valid_mask?("256.256.0.0")
+    refute IPA.valid_mask?(0)
+    refute IPA.valid_mask?(33)
   end
 
   test "dot decimal address to hex" do
-    assert IPA.to_hex(@valid_ip) == "0xC0A80001"
+    assert IPA.to_hex("192.168.0.1") == "0xC0A80001"
   end
 
   test "invalid dot decimal address to hex raises error" do
     assert_raise IPError, "Invalid IP Address", fn ->
-      IPA.to_hex(@invalid_ip)
+      IPA.to_hex("192.168.256.256")
     end
   end
 
   test "dot decimal address to bits" do
-    assert IPA.to_bits(@valid_ip) == "11000000.10101000.00000000.00000001"
+    assert IPA.to_bits("192.168.0.1") == "11000000.10101000.00000000.00000001"
   end
 
   test "invalid dot decimal address to bits raises error" do
     assert_raise IPError, "Invalid IP Address", fn ->
-      IPA.to_bits(@invalid_ip)
+      IPA.to_bits("192.168.256.256")
     end
   end
 
   test "dot decimal address to binary" do
-    assert IPA.to_binary(@valid_ip) == "0b11000000101010000000000000000001"
+    assert IPA.to_binary("192.168.0.1") == "0b11000000101010000000000000000001"
   end
 
   test "invalid dot decimal address to binary raises error" do
     assert_raise IPError, "Invalid IP Address", fn ->
-      IPA.to_binary(@invalid_ip)
+      IPA.to_binary("192.168.256.256")
     end
   end
 
@@ -62,12 +75,12 @@ defmodule IPATest do
   end
 
   test "dot decimal address to octets" do
-    assert IPA.to_octets(@valid_ip) == {192, 168, 0, 1}
+    assert IPA.to_octets("192.168.0.1") == {192, 168, 0, 1}
   end
 
   test "invalid dot decimal address to octets raises error" do
     assert_raise IPError, "Invalid IP Address", fn ->
-      IPA.to_octets(@invalid_ip)
+      IPA.to_octets("192.168.256.256")
     end
   end
 
