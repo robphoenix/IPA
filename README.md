@@ -100,7 +100,7 @@ IPA.to_cidr("255.255.255.0")   #=> 24
 
 ## TODO
 
-**this** - *"You should probably parse to some internal representation that requires the least parsing or generating...which might just be a binary of some kind. Or you could just use what Erlang likes to, which is the 4-tuple."
+**this** - *"You should probably parse to some internal representation that requires the least parsing or generating...which might just be a binary of some kind. Or you could just use what Erlang likes to, which is the 4-tuple."* - asonge
 
 - validity checks for hex, binary & tuple masks
 - validity checks for hex, binary, bits & tuple addresses
