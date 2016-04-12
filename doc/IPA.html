@@ -5,7 +5,7 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.11.4">
-    <title>IPA – ipa v0.0.1</title>
+    <title>IPA – ipa v0.0.2</title>
     <link rel="stylesheet" href="dist/app-1e374caa3d.css" />
     <script src="dist/sidebar_items.js"></script>
   </head>
@@ -27,7 +27,7 @@
         ipa
       </h1>
       <h2 class="sidebar-projectVersion">
-        v0.0.1
+        v0.0.2
       </h2>
     </div>
     
@@ -61,7 +61,7 @@
 
 
       <h1>
-        <small class="visible-xs">ipa v0.0.1</small>
+        <small class="visible-xs">ipa v0.0.2</small>
         IPA
         
         
@@ -138,7 +138,7 @@
     <a href="#to_binary/1">to_binary(ip)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Converts a dotted decimal IP address/Subnet Mask, or a slash
+    <div class="summary-synopsis"><p>Converts a dotted decimal IP address/Subnet Mask, or a CIDR
 notation numerical Subnet Mask to a <code class="inline">0b</code> prefixed binary number</p>
 </div>
   
@@ -148,7 +148,7 @@ notation numerical Subnet Mask to a <code class="inline">0b</code> prefixed bina
     <a href="#to_bits/1">to_bits(ip)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Converts a dotted decimal IP address/Subnet Mask, or a slash
+    <div class="summary-synopsis"><p>Converts a dotted decimal IP address/Subnet Mask, or a CIDR
 notation numerical Subnet Mask to binary bits</p>
 </div>
   
@@ -176,7 +176,7 @@ notation numerical Subnet Mask to binary bits</p>
     <a href="#to_hex/1">to_hex(ip)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Converts a dot decimal IP address/Subnet Mask, or a slash
+    <div class="summary-synopsis"><p>Converts a dotted decimal IP address/Subnet Mask, or a CIDR
 notation numerical Subnet Mask to a <code class="inline">0x</code> prefixed hexadecimal
 number</p>
 </div>
@@ -188,7 +188,7 @@ number</p>
   </div>
   
     <div class="summary-synopsis"><p>Converts a dotted decimal IP address or Subnet Mask, or a
-slash notation Subnet Mask, to a 4 element tuple, representing
+CIDR notation Subnet Mask, to a 4 element tuple, representing
 the 4 octets</p>
 </div>
   
@@ -292,7 +292,7 @@ the 4 octets</p>
 <td style="text-align: center"><code class="inline">:this_network</code></td><td style="text-align: center"><code class="inline">0.0.0.0/8</code></td><td style="text-align: center">Used for broadcast messages to the current “this” network as specified by RFC 1700, page 4.</td>
 </tr>
 <tr>
-<td style="text-align: center"><code class="inline">:rfc1918</code></td><td style="text-align: center"><code class="inline">10.0.0.0/8</code>, <code class="inline">172.16.0.0/12</code> &amp; <code class="inline">192.168.0.0/16</code></td><td style="text-align: center">Used for local communications within a private network as specified by RFC 1918.</td>
+<td style="text-align: center"><code class="inline">:rfc1918</code></td><td style="text-align: center"><code class="inline">10.0.0.0/8</code> <code class="inline">172.16.0.0/12</code> <code class="inline">192.168.0.0/16</code></td><td style="text-align: center">Used for local communications within a private network as specified by RFC 1918.</td>
 </tr>
 <tr>
 <td style="text-align: center"><code class="inline">:rfc6598</code></td><td style="text-align: center"><code class="inline">100.64.0.0/10</code></td><td style="text-align: center">Used for communications between a service provider and its subscribers when using a Carrier-grade NAT, as specified by RFC 6598.</td>
@@ -307,7 +307,7 @@ the 4 octets</p>
 <td style="text-align: center"><code class="inline">:rfc5736</code></td><td style="text-align: center"><code class="inline">192.0.0.0/24</code></td><td style="text-align: center">Used for the IANA IPv4 Special Purpose Address Registry as specified by RFC 5736.</td>
 </tr>
 <tr>
-<td style="text-align: center"><code class="inline">:rfc5737</code></td><td style="text-align: center"><code class="inline">192.0.2.0/24</code>, <code class="inline">198.51.100.0/24</code> &amp; <code class="inline">203.0.113.0/24</code></td><td style="text-align: center">Assigned as “TEST-NET” in RFC 5737 for use solely in documentation and example source code and should not be used publicly.</td>
+<td style="text-align: center"><code class="inline">:rfc5737</code></td><td style="text-align: center"><code class="inline">192.0.2.0/24</code> <code class="inline">198.51.100.0/24</code> <code class="inline">203.0.113.0/24</code></td><td style="text-align: center">Assigned as “TEST-NET” in RFC 5737 for use solely in documentation and example source code and should not be used publicly.</td>
 </tr>
 <tr>
 <td style="text-align: center"><code class="inline">:rfc3068</code></td><td style="text-align: center"><code class="inline">192.88.99.0/24</code></td><td style="text-align: center">Used by 6to4 anycast relays as specified by RFC 3068.</td>
@@ -329,10 +329,10 @@ the 4 octets</p>
 </tr>
 </table>
 <h2>Examples</h2>
-<p>iex&gt; IPA.block(“8.8.8.8”)
+<pre><code class="iex elixir">iex&gt; IPA.block(&quot;8.8.8.8&quot;)
 :public
-iex&gt; IPA.block(“192.168.0.1”)
-:rfc1918</p>
+iex&gt; IPA.block(&quot;192.168.0.1&quot;)
+:rfc1918</code></pre>
 
   </section>
 </div>
@@ -378,7 +378,7 @@ iex&gt; IPA.block(“192.168.0.1”)
     </div>
   
   <section class="docstring">
-    <p>Converts a dotted decimal IP address/Subnet Mask, or a slash
+    <p>Converts a dotted decimal IP address/Subnet Mask, or a CIDR
 notation numerical Subnet Mask to a <code class="inline">0b</code> prefixed binary number.</p>
 <h2>Example</h2>
 <pre><code class="iex elixir">iex&gt; IPA.to_binary(&quot;192.168.0.1&quot;)
@@ -409,7 +409,7 @@ iex&gt; IPA.to_binary(24)
     </div>
   
   <section class="docstring">
-    <p>Converts a dotted decimal IP address/Subnet Mask, or a slash
+    <p>Converts a dotted decimal IP address/Subnet Mask, or a CIDR
 notation numerical Subnet Mask to binary bits.</p>
 <h2>Example</h2>
 <pre><code class="iex elixir">iex&gt; IPA.to_bits(&quot;192.168.0.1&quot;)
@@ -483,7 +483,7 @@ iex&gt; IPA.to_bits(24)
     </div>
   
   <section class="docstring">
-    <p>Converts a dot decimal IP address/Subnet Mask, or a slash
+    <p>Converts a dotted decimal IP address/Subnet Mask, or a CIDR
 notation numerical Subnet Mask to a <code class="inline">0x</code> prefixed hexadecimal
 number.</p>
 <h2>Example</h2>
@@ -512,7 +512,7 @@ number.</p>
   
   <section class="docstring">
     <p>Converts a dotted decimal IP address or Subnet Mask, or a
-slash notation Subnet Mask, to a 4 element tuple, representing
+CIDR notation Subnet Mask, to a 4 element tuple, representing
 the 4 octets.</p>
 <h2>Example</h2>
 <pre><code class="iex elixir">iex&gt; IPA.to_octets(&quot;192.168.0.1&quot;)
@@ -582,7 +582,7 @@ false</code></pre>
   
   <section class="docstring">
     <p>Checks if the given subnet mask is valid.</p>
-<p>Works with slash notation, as well as dotted decimal and
+<p>Works with CIDR notation, as well as dotted decimal and
 dotted binary.</p>
 <h2>Examples</h2>
 <pre><code class="iex elixir">iex&gt; IPA.valid_mask?(24)
