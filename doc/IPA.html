@@ -46,6 +46,8 @@
     
 
     
+      <li><a id="exceptions-list" href="#full-list">Exceptions</a></li>
+    
 
     
   </ul>
@@ -67,8 +69,8 @@
 
       
         <section id="moduledoc" class="docstring">
-          <p>Module containing a delegated function for creating an
-IP address struct, providing a slightly simpler API.</p>
+          <p>Functions for working with IP addresses.</p>
+<p>Currently only compatible with IPv4 addresses.</p>
 
         </section>
       
@@ -82,6 +84,31 @@ IP address struct, providing a slightly simpler API.</p>
             Summary
           </h1>
           
+  <div class="summary-types summary">
+    <h2>
+      <a href="#types">Types</a>
+    </h2>
+    <div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:addr/0">addr()</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:ip/0">ip()</a>
+  </div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#t:mask/0">mask()</a>
+  </div>
+  
+</div>
+
+  </div>
+
 
           
   <div class="summary-functions summary">
@@ -90,19 +117,97 @@ IP address struct, providing a slightly simpler API.</p>
     </h2>
     <div class="summary-row">
   <div class="summary-signature">
-    <a href="#address/1">address(addr)</a>
+    <a href="#block/1">block(addr)</a>
   </div>
   
-    <div class="summary-synopsis"><p>See <a href="IPA.Address.html#address/1"><code class="inline">IPA.Address.address/1</code></a></p>
+    <div class="summary-synopsis"><p>Returns an atom describing which reserved block the address is a member of if it is a private address, returns <code class="inline">:public</code> otherwise</p>
 </div>
   
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="#address!/1">address!(addr)</a>
+    <a href="#reserved?/1">reserved?(addr)</a>
   </div>
   
-    <div class="summary-synopsis"><p>See <a href="IPA.Address.html#address!/1"><code class="inline">IPA.Address.address!/1</code></a></p>
+    <div class="summary-synopsis"><p>Checks whether a given IP address is reserved</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#to_binary/1">to_binary(ip)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Converts a dotted decimal IP address/Subnet Mask, or a slash
+notation numerical Subnet Mask to a <code class="inline">0b</code> prefixed binary number</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#to_bits/1">to_bits(ip)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Converts a dotted decimal IP address/Subnet Mask, or a slash
+notation numerical Subnet Mask to binary bits</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#to_cidr/1">to_cidr(mask)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Converts a dotted decimal Subnet Mask to CIDR notation</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#to_dotted_dec/1">to_dotted_dec(mask)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Converts CIDR notation to dotted decimal</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#to_hex/1">to_hex(ip)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Converts a dot decimal IP address/Subnet Mask, or a slash
+notation numerical Subnet Mask to a <code class="inline">0x</code> prefixed hexadecimal
+number</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#to_octets/1">to_octets(ip)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Converts a dotted decimal IP address or Subnet Mask, or a
+slash notation Subnet Mask, to a 4 element tuple, representing
+the 4 octets</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#valid_address?/1">valid_address?(addr)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Checks if the given dotted decimal IP address is valid</p>
+</div>
+  
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="#valid_mask?/1">valid_mask?(mask)</a>
+  </div>
+  
+    <div class="summary-synopsis"><p>Checks if the given subnet mask is valid</p>
 </div>
   
 </div>
@@ -118,6 +223,30 @@ IP address struct, providing a slightly simpler API.</p>
       
 
       
+        <section id="types" class="types details-list">
+          <h1 class="section-heading">
+            <a class="hover-link" href="#types">
+              <i class="icon-link"></i>
+            </a>
+            Types
+          </h1>
+          <div class="types-list">
+            <div id="t:addr/0" class="type-detail">
+  <pre><code class="elixir"><a href="#t:addr/0">addr</a> :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a></code></pre>
+  
+</div>
+<div id="t:ip/0" class="type-detail">
+  <pre><code class="elixir"><a href="#t:ip/0">ip</a> :: <a href="#t:addr/0">addr</a> | <a href="#t:mask/0">mask</a></code></pre>
+  
+</div>
+<div id="t:mask/0" class="type-detail">
+  <pre><code class="elixir"><a href="#t:mask/0">mask</a> :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a> | non_neg_integer</code></pre>
+  
+</div>
+
+          </div>
+        </section>
+      
 
       
         <section id="functions" class="details-list">
@@ -127,31 +256,347 @@ IP address struct, providing a slightly simpler API.</p>
             </a>
             Functions
           </h1>
-          <div class="detail" id="address/1">
+          <div class="detail" id="block/1">
   <div class="detail-header">
-    <a href="#address/1" class="detail-link" title="Link to this function">
+    <a href="#block/1" class="detail-link" title="Link to this function">
       <i class="icon-link"></i>
     </a>
-    <span class="signature">address(addr)</span>
+    <span class="signature">block(addr)</span>
       
   </div>
   
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">block(<a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>) :: atom</code></pre>
+        
+      </div>
+    </div>
+  
   <section class="docstring">
-    <p>See <a href="IPA.Address.html#address/1"><code class="inline">IPA.Address.address/1</code></a>.</p>
+    <p>Returns an atom describing which reserved block the address is a member of if it is a private address, returns <code class="inline">:public</code> otherwise.</p>
+<p><a href="https://en.wikipedia.org/wiki/Reserved_IP_addresses">Available blocks</a>:</p>
+<table>
+<colgroup>
+<col>
+<col>
+<col>
+</colgroup>
+<thead>
+<tr>
+<th style="text-align: center">Atom</th><th style="text-align: center">Range(s)</th><th style="text-align: center">Purpose</th>
+</tr>
+</thead>
+<tr>
+<td style="text-align: center"><code class="inline">:this_network</code></td><td style="text-align: center"><code class="inline">0.0.0.0/8</code></td><td style="text-align: center">Used for broadcast messages to the current “this” network as specified by RFC 1700, page 4.</td>
+</tr>
+<tr>
+<td style="text-align: center"><code class="inline">:rfc1918</code></td><td style="text-align: center"><code class="inline">10.0.0.0/8</code>, <code class="inline">172.16.0.0/12</code> &amp; <code class="inline">192.168.0.0/16</code></td><td style="text-align: center">Used for local communications within a private network as specified by RFC 1918.</td>
+</tr>
+<tr>
+<td style="text-align: center"><code class="inline">:rfc6598</code></td><td style="text-align: center"><code class="inline">100.64.0.0/10</code></td><td style="text-align: center">Used for communications between a service provider and its subscribers when using a Carrier-grade NAT, as specified by RFC 6598.</td>
+</tr>
+<tr>
+<td style="text-align: center"><code class="inline">:loopback</code></td><td style="text-align: center"><code class="inline">127.0.0.0/8</code></td><td style="text-align: center">Used for loopback addresses to the local host, as specified by RFC 990.</td>
+</tr>
+<tr>
+<td style="text-align: center"><code class="inline">:link_local</code></td><td style="text-align: center"><code class="inline">169.254.0.0/16</code></td><td style="text-align: center">Used for link-local addresses between two hosts on a single link when no IP address is otherwise specified, such as would have normally been retrieved from a DHCP server, as specified by RFC 3927.</td>
+</tr>
+<tr>
+<td style="text-align: center"><code class="inline">:rfc5736</code></td><td style="text-align: center"><code class="inline">192.0.0.0/24</code></td><td style="text-align: center">Used for the IANA IPv4 Special Purpose Address Registry as specified by RFC 5736.</td>
+</tr>
+<tr>
+<td style="text-align: center"><code class="inline">:rfc5737</code></td><td style="text-align: center"><code class="inline">192.0.2.0/24</code>, <code class="inline">198.51.100.0/24</code> &amp; <code class="inline">203.0.113.0/24</code></td><td style="text-align: center">Assigned as “TEST-NET” in RFC 5737 for use solely in documentation and example source code and should not be used publicly.</td>
+</tr>
+<tr>
+<td style="text-align: center"><code class="inline">:rfc3068</code></td><td style="text-align: center"><code class="inline">192.88.99.0/24</code></td><td style="text-align: center">Used by 6to4 anycast relays as specified by RFC 3068.</td>
+</tr>
+<tr>
+<td style="text-align: center"><code class="inline">:rfc2544</code></td><td style="text-align: center"><code class="inline">198.18.0.0/15</code></td><td style="text-align: center">Used for testing of inter-network communications between two separate subnets as specified in RFC 2544.</td>
+</tr>
+<tr>
+<td style="text-align: center"><code class="inline">:multicast</code></td><td style="text-align: center"><code class="inline">224.0.0.0/4</code></td><td style="text-align: center">Reserved for multicast assignments as specified in RFC 5771. <code class="inline">233.252.0.0/24</code> is assigned as “MCAST-TEST-NET” for use solely in documentation and example source code.</td>
+</tr>
+<tr>
+<td style="text-align: center"><code class="inline">:future</code></td><td style="text-align: center"><code class="inline">240.0.0.0/4</code></td><td style="text-align: center">Reserved for future use, as specified by RFC 6890.</td>
+</tr>
+<tr>
+<td style="text-align: center"><code class="inline">:limited_broadcast</code></td><td style="text-align: center"><code class="inline">255.255.255.255/32</code></td><td style="text-align: center">Reserved for the “limited broadcast” destination address, as specified by RFC 6890.</td>
+</tr>
+<tr>
+<td style="text-align: center"><code class="inline">:public</code></td><td style="text-align: center"></td><td style="text-align: center">All other addresses are public.</td>
+</tr>
+</table>
+<h2>Examples</h2>
+<p>iex&gt; IPA.block(“8.8.8.8”)
+:public
+iex&gt; IPA.block(“192.168.0.1”)
+:rfc1918</p>
 
   </section>
 </div>
-<div class="detail" id="address!/1">
+<div class="detail" id="reserved?/1">
   <div class="detail-header">
-    <a href="#address!/1" class="detail-link" title="Link to this function">
+    <a href="#reserved?/1" class="detail-link" title="Link to this function">
       <i class="icon-link"></i>
     </a>
-    <span class="signature">address!(addr)</span>
+    <span class="signature">reserved?(addr)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">reserved?(<a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a>) :: boolean</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Checks whether a given IP address is reserved.</p>
+
+  </section>
+</div>
+<div class="detail" id="to_binary/1">
+  <div class="detail-header">
+    <a href="#to_binary/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">to_binary(ip)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">to_binary(<a href="#t:ip/0">ip</a>) :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a></code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Converts a dotted decimal IP address/Subnet Mask, or a slash
+notation numerical Subnet Mask to a <code class="inline">0b</code> prefixed binary number.</p>
+<h2>Example</h2>
+<pre><code class="iex elixir">iex&gt; IPA.to_binary(&quot;192.168.0.1&quot;)
+&quot;0b11000000101010000000000000000001&quot;
+iex&gt; IPA.to_binary(&quot;255.255.255.0&quot;)
+&quot;0b11111111111111111111111100000000&quot;
+iex&gt; IPA.to_binary(24)
+&quot;0b11111111111111111111111100000000&quot;</code></pre>
+
+  </section>
+</div>
+<div class="detail" id="to_bits/1">
+  <div class="detail-header">
+    <a href="#to_bits/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">to_bits(ip)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">to_bits(<a href="#t:ip/0">ip</a>) :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a></code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Converts a dotted decimal IP address/Subnet Mask, or a slash
+notation numerical Subnet Mask to binary bits.</p>
+<h2>Example</h2>
+<pre><code class="iex elixir">iex&gt; IPA.to_bits(&quot;192.168.0.1&quot;)
+&quot;11000000.10101000.00000000.00000001&quot;
+iex&gt; IPA.to_bits(&quot;255.255.255.0&quot;)
+&quot;11111111.11111111.11111111.00000000&quot;
+iex&gt; IPA.to_bits(24)
+&quot;11111111.11111111.11111111.00000000&quot;</code></pre>
+
+  </section>
+</div>
+<div class="detail" id="to_cidr/1">
+  <div class="detail-header">
+    <a href="#to_cidr/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">to_cidr(mask)</span>
       
   </div>
   
   <section class="docstring">
-    <p>See <a href="IPA.Address.html#address!/1"><code class="inline">IPA.Address.address!/1</code></a>.</p>
+    <p>Converts a dotted decimal Subnet Mask to CIDR notation.</p>
+<h2>Examples</h2>
+<pre><code class="iex elixir">iex&gt; IPA.to_cidr(&quot;255.255.255.0&quot;)
+24</code></pre>
+
+  </section>
+</div>
+<div class="detail" id="to_dotted_dec/1">
+  <div class="detail-header">
+    <a href="#to_dotted_dec/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">to_dotted_dec(mask)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">to_dotted_dec(<a href="#t:ip/0">ip</a>) :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a></code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Converts CIDR notation to dotted decimal.</p>
+<h2>Example</h2>
+<pre><code class="iex elixir">iex&gt; IPA.to_dotted_dec(24)
+&quot;255.255.255.0&quot;</code></pre>
+
+  </section>
+</div>
+<div class="detail" id="to_hex/1">
+  <div class="detail-header">
+    <a href="#to_hex/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">to_hex(ip)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">to_hex(<a href="#t:ip/0">ip</a>) :: <a href="http://elixir-lang.org/docs/stable/elixir/String.html#t:t/0">String.t</a></code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Converts a dot decimal IP address/Subnet Mask, or a slash
+notation numerical Subnet Mask to a <code class="inline">0x</code> prefixed hexadecimal
+number.</p>
+<h2>Example</h2>
+<pre><code class="iex elixir">iex&gt; IPA.to_hex(&quot;192.168.0.1&quot;)
+&quot;0xC0A80001&quot;</code></pre>
+
+  </section>
+</div>
+<div class="detail" id="to_octets/1">
+  <div class="detail-header">
+    <a href="#to_octets/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">to_octets(ip)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">to_octets(<a href="#t:ip/0">ip</a>) :: {integer}</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Converts a dotted decimal IP address or Subnet Mask, or a
+slash notation Subnet Mask, to a 4 element tuple, representing
+the 4 octets.</p>
+<h2>Example</h2>
+<pre><code class="iex elixir">iex&gt; IPA.to_octets(&quot;192.168.0.1&quot;)
+{192, 168, 0, 1}
+iex&gt; IPA.to_octets(&quot;255.255.255.0&quot;)
+{255, 255, 255, 0}
+iex&gt; IPA.to_octets(24)
+{255, 255, 255, 0}</code></pre>
+
+  </section>
+</div>
+<div class="detail" id="valid_address?/1">
+  <div class="detail-header">
+    <a href="#valid_address?/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">valid_address?(addr)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">valid_address?(<a href="#t:addr/0">addr</a>) :: boolean</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Checks if the given dotted decimal IP address is valid.</p>
+<p>Uses a regular expression to check there is exactly
+4 integers between 0 &amp; 255, inclusive, separated by dots.
+Taken from <a href="http://www.regular-expressions.info/numericranges.html">here</a>.
+Therefore does not currently take into consideration
+the fact that <code class="inline">127.1</code> can be considered a valid IP address
+that translates to <code class="inline">127.0.0.1</code>.</p>
+<h2>Examples</h2>
+<pre><code class="iex elixir">iex&gt; IPA.valid_address?(&quot;192.168.0.1&quot;)
+true
+iex&gt; IPA.valid_address?(&quot;8.8.8.8&quot;)
+true
+iex&gt; IPA.valid_address?(&quot;10.0.0.256&quot;)
+false
+iex&gt; IPA.valid_address?(&quot;10.0.0.&quot;)
+false</code></pre>
+
+  </section>
+</div>
+<div class="detail" id="valid_mask?/1">
+  <div class="detail-header">
+    <a href="#valid_mask?/1" class="detail-link" title="Link to this function">
+      <i class="icon-link"></i>
+    </a>
+    <span class="signature">valid_mask?(mask)</span>
+      
+  </div>
+  
+    <div class="specs">
+      <h4 class="specs-title">Specs</h4>
+      <div class="specs-list">
+        
+          <pre><code class="elixir">valid_mask?(<a href="#t:mask/0">mask</a>) :: boolean</code></pre>
+        
+      </div>
+    </div>
+  
+  <section class="docstring">
+    <p>Checks if the given subnet mask is valid.</p>
+<p>Works with slash notation, as well as dotted decimal and
+dotted binary.</p>
+<h2>Examples</h2>
+<pre><code class="iex elixir">iex&gt; IPA.valid_mask?(24)
+true
+iex&gt; IPA.valid_mask?(33)
+false
+iex&gt; IPA.valid_mask?(&quot;255.255.255.0&quot;)
+true
+iex&gt; IPA.valid_mask?(&quot;192.168.0.1&quot;)
+false
+iex&gt; IPA.valid_mask?(&quot;11111111.11111111.11111111.00000000&quot;)
+true
+iex&gt; IPA.valid_mask?(&quot;10101000.10101000.00000000.00000000&quot;)
+false</code></pre>
 
   </section>
 </div>

@@ -41,7 +41,7 @@ defmodule IPA do
   @doc """
   Checks if the given subnet mask is valid.
 
-  Works with slash notation, as well as dotted decimal and
+  Works with CIDR notation, as well as dotted decimal and
   dotted binary.
 
   ## Examples
@@ -95,7 +95,7 @@ defmodule IPA do
   end
 
   @doc """
-  Converts slash notation to dotted decimal.
+  Converts CIDR notation to dotted decimal.
 
   ## Example
 
@@ -110,7 +110,7 @@ defmodule IPA do
   end
 
   @doc """
-  Converts a dotted decimal IP address/Subnet Mask, or a slash
+  Converts a dotted decimal IP address/Subnet Mask, or a CIDR
   notation numerical Subnet Mask to a `0b` prefixed binary number.
 
   ## Example
@@ -123,6 +123,8 @@ defmodule IPA do
       "0b11111111111111111111111100000000"
   """
   @spec to_binary(ip) :: String.t
+  def to_binary(ip)
+
   def to_binary(addr) do
     addr
     |> validate_and_transform_to_int_list
@@ -130,7 +132,7 @@ defmodule IPA do
   end
 
   @doc """
-  Converts a dot decimal IP address/Subnet Mask, or a slash
+  Converts a dotted decimal IP address/Subnet Mask, or a CIDR
   notation numerical Subnet Mask to binary bits.
 
   ## Example
@@ -143,6 +145,8 @@ defmodule IPA do
       "11111111.11111111.11111111.00000000"
   """
   @spec to_bits(ip) :: String.t
+  def to_bits(ip)
+
   def to_bits(addr)  do
     addr
     |> validate_and_transform_to_int_list
@@ -150,7 +154,7 @@ defmodule IPA do
   end
 
   @doc """
-  Converts a dot decimal IP address/Subnet Mask, or a slash
+  Converts a dotted decimal IP address/Subnet Mask, or a CIDR
   notation numerical Subnet Mask to a `0x` prefixed hexadecimal
   number.
 
@@ -160,6 +164,8 @@ defmodule IPA do
       "0xC0A80001"
   """
   @spec to_hex(ip) :: String.t
+  def to_hex(ip)
+
   def to_hex(addr) do
     addr
     |> validate_and_transform_to_int_list
@@ -168,7 +174,7 @@ defmodule IPA do
 
   @doc """
   Converts a dotted decimal IP address or Subnet Mask, or a
-  slash notation Subnet Mask, to a 4 element tuple, representing
+  CIDR notation Subnet Mask, to a 4 element tuple, representing
   the 4 octets.
 
   ## Example
@@ -237,26 +243,28 @@ defmodule IPA do
 
   [Available blocks](https://en.wikipedia.org/wiki/Reserved_IP_addresses):
 
-  * `:this_network` - `0.0.0.0/8` Used for broadcast messages to the current "this" network as specified by RFC 1700, page 4.
-  * `:rfc1918` - `10.0.0.0/8`, `172.16.0.0/12` & `192.168.0.0/16` Used for local communications within a private network as specified by RFC 1918.
-  * `:rfc6598` - `100.64.0.0/10` Used for communications between a service provider and its subscribers when using a Carrier-grade NAT, as specified by RFC 6598.
-  * `:loopback` - `127.0.0.0/8` Used for loopback addresses to the local host, as specified by RFC 990.
-  * `:link_local` - `169.254.0.0/16` Used for link-local addresses between two hosts on a single link when no IP address is otherwise specified, such as would have normally been retrieved from a DHCP server, as specified by RFC 3927.
-  * `:rfc5736` - `192.0.0.0/24` Used for the IANA IPv4 Special Purpose Address Registry as specified by RFC 5736.
-  * `:rfc5737` - `192.0.2.0/24`, `198.51.100.0/24` & `203.0.113.0/24` Assigned as "TEST-NET" in RFC 5737 for use solely in documentation and example source code and should not be used publicly.
-  * `:rfc3068` - `192.88.99.0/24` Used by 6to4 anycast relays as specified by RFC 3068.
-  * `:rfc2544` - `198.18.0.0/15` Used for testing of inter-network communications between two separate subnets as specified in RFC 2544.
-  * `:multicast` - `224.0.0.0/4` Reserved for multicast assignments as specified in RFC 5771. `233.252.0.0/24` is assigned as "MCAST-TEST-NET" for use solely in documentation and example source code.
-  * `:future` - `240.0.0.0/4` Reserved for future use, as specified by RFC 6890.
-  * `:limited_broadcast` - `255.255.255.255/32` Reserved for the "limited broadcast" destination address, as specified by RFC 6890.
-  * `:public` - All other addresses are public.
+  | Atom | Range(s) | Purpose |
+  |:----:|:--------:|:-------:|
+  | `:this_network` | `0.0.0.0/8` | Used for broadcast messages to the current "this" network as specified by RFC 1700, page 4. |
+  | `:rfc1918` | `10.0.0.0/8` `172.16.0.0/12` `192.168.0.0/16` | Used for local communications within a private network as specified by RFC 1918. |
+  | `:rfc6598` | `100.64.0.0/10` | Used for communications between a service provider and its subscribers when using a Carrier-grade NAT, as specified by RFC 6598. |
+  | `:loopback` | `127.0.0.0/8` | Used for loopback addresses to the local host, as specified by RFC 990. |
+  | `:link_local` | `169.254.0.0/16` | Used for link-local addresses between two hosts on a single link when no IP address is otherwise specified, such as would have normally been retrieved from a DHCP server, as specified by RFC 3927. |
+  | `:rfc5736` | `192.0.0.0/24` | Used for the IANA IPv4 Special Purpose Address Registry as specified by RFC 5736. |
+  | `:rfc5737` | `192.0.2.0/24` `198.51.100.0/24` `203.0.113.0/24` | Assigned as "TEST-NET" in RFC 5737 for use solely in documentation and example source code and should not be used publicly. |
+  | `:rfc3068` | `192.88.99.0/24` | Used by 6to4 anycast relays as specified by RFC 3068. |
+  | `:rfc2544` | `198.18.0.0/15` | Used for testing of inter-network communications between two separate subnets as specified in RFC 2544. |
+  | `:multicast` | `224.0.0.0/4` | Reserved for multicast assignments as specified in RFC 5771. `233.252.0.0/24` is assigned as "MCAST-TEST-NET" for use solely in documentation and example source code. |
+  | `:future` | `240.0.0.0/4` | Reserved for future use, as specified by RFC 6890. |
+  | `:limited_broadcast` | `255.255.255.255/32` | Reserved for the "limited broadcast" destination address, as specified by RFC 6890. |
+  | `:public` | | All other addresses are public. |
 
   ## Examples
 
-  iex> IPA.block("8.8.8.8")
-  :public
-  iex> IPA.block("192.168.0.1")
-  :rfc1918
+      iex> IPA.block("8.8.8.8")
+      :public
+      iex> IPA.block("192.168.0.1")
+      :rfc1918
   """
   @spec block(String.t) :: atom
   def block(addr) do
