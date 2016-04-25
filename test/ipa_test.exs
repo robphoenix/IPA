@@ -4,8 +4,14 @@ defmodule IPATest do
 
   ExUnit.configure exclude: :pending, trace: true
 
-  test "valid dotted decimal address" do
+  test "validity of dotted decimal addresses" do
     assert IPA.valid_address?("192.168.0.1")
+    refute IPA.valid_address?("192.168.256.256")
+    refute IPA.valid_address?("192.168.0")
+    refute IPA.valid_address?("192.168")
+    refute IPA.valid_address?("192.168.0.1.1")
+    refute IPA.valid_address?("192.168.0.1.1.")
+    refute IPA.valid_address?("192.168.0.1.")
   end
 
   test "valid binary address" do
@@ -29,13 +35,6 @@ defmodule IPATest do
     assert IPA.valid_mask?(24)
     assert IPA.valid_mask?("255.255.255.0")
     assert IPA.valid_mask?("11111111.11111111.11111111.00000000")
-  end
-
-  test "invalid addresses" do
-    refute IPA.valid_address?("192.168.256.256")
-    refute IPA.valid_address?("192.168.0")
-    refute IPA.valid_address?("192.168.0.1.1")
-    refute IPA.valid_address?("192.168.0.1.")
   end
 
   @tag :pending
@@ -73,9 +72,11 @@ defmodule IPATest do
     end
   end
 
-  @tag :pending
-  test "dot decimal address to binary" do
+  test "addresses to binary" do
     assert IPA.to_binary("192.168.0.1") == "0b11000000101010000000000000000001"
+    assert IPA.to_binary({192, 168, 0, 1}) == "0b11000000101010000000000000000001"
+    assert IPA.to_binary("0xC0A80001") == "0b11000000101010000000000000000001"
+    assert IPA.to_binary("11000000.10101000.00000000.00000001") == "0b11000000101010000000000000000001"
   end
 
   @tag :pending

@@ -9,18 +9,13 @@ defmodule IPA do
   @type addr :: String.t
   @type mask :: String.t | non_neg_integer
 
-  @addr_regex ~r/^(([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\.){3}
-                   ([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/x
 
   @mask_regex ~r/^((1|0){1,8}\.){3}(1|0){1,8}$/
 
   @doc """
   Checks if the given dotted decimal IP address is valid.
 
-  Uses a regular expression to check there is exactly
-  4 integers between 0 & 255, inclusive, separated by dots.
-  Taken from [here](http://www.regular-expressions.info/numericranges.html).
-  Therefore does not currently take into consideration
+  Does not currently take into consideration
   the fact that `127.1` can be considered a valid IP address
   that translates to `127.0.0.1`.
 
@@ -36,21 +31,24 @@ defmodule IPA do
       false
   """
   @spec valid_address?(addr) :: boolean
-  def valid_address?(addr) when is_tuple(addr) do
+  def valid_address?(addr) do
     addr
-    |> Tuple.to_list
+    |> to_ip_list
     |> validate_ip_list
   end
-  def valid_address?(addr) do
+
+  defp to_ip_list(addr) do
     cond do
+      is_tuple(addr) ->
+        Tuple.to_list(addr)
       String.at(addr, 1) == "x" ->
-        addr |> hex_to_ip_list |> validate_ip_list
+        addr |> hex_to_ip_list
       String.at(addr, 1) == "b" ->
-        addr |> bin_to_ip_list |> validate_ip_list
+        addr |> bin_to_ip_list
+      number_of_dots(addr) <= 3 ->
+        addr |> dotted_to_ip_list
       number_of_dots(addr) > 3 ->
         false
-      number_of_dots(addr) <= 3 ->
-        addr |> dotted_to_ip_list |> validate_ip_list
     end
   end
 
@@ -177,9 +175,16 @@ defmodule IPA do
   def to_binary(ip)
 
   def to_binary(addr) do
-    addr
-    |> validate_and_transform_to_int_list
-    |> transform_addr(2, 8, "", "0b")
+    ip_list = addr |> to_ip_list
+    if validate_ip_list(ip_list) do
+      ip_list_to_binary(ip_list)
+    else
+      raise IPError
+    end
+  end
+
+  defp ip_list_to_binary(ip_list) do
+    ip_list |> transform_addr(2, 8, "", "0b")
   end
 
   @doc """
