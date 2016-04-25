@@ -48,9 +48,11 @@ defmodule IPATest do
     refute IPA.valid_mask?(33)
   end
 
-  @tag :pending
-  test "dot decimal address to hex" do
+  test "addresses to hex" do
     assert IPA.to_hex("192.168.0.1") == "0xC0A80001"
+    assert IPA.to_hex({192, 168, 0, 1}) == "0xC0A80001"
+    assert IPA.to_hex("0b11000000101010000000000000000001") == "0xC0A80001"
+    assert IPA.to_hex("11000000.10101000.00000000.00000001") == "0xC0A80001"
   end
 
   @tag :pending
@@ -79,7 +81,6 @@ defmodule IPATest do
     assert IPA.to_binary("11000000.10101000.00000000.00000001") == "0b11000000101010000000000000000001"
   end
 
-  @tag :pending
   test "invalid dot decimal address to binary raises error" do
     assert_raise IPError, "Invalid IP Address", fn ->
       IPA.to_binary("192.168.256.256")
