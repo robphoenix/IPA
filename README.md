@@ -1,3 +1,5 @@
+# This README is currently out of date whilst I'm in the middle of making some changes
+
 # IPA
 
 A pale, hoppy library for working with Internet Protocol Addresses.
