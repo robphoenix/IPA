@@ -102,14 +102,12 @@ defmodule IPATest do
     end
   end
 
-  @tag :pending
   test "valid subnet mask" do
     assert IPA.valid_mask?(24)
     assert IPA.valid_mask?("255.255.255.0")
     assert IPA.valid_mask?("11111111.11111111.11111111.00000000")
   end
 
-  @tag :pending
   test "invalid subnet masks" do
     refute IPA.valid_mask?("11111111.00000000.11111111.00000000")
     refute IPA.valid_mask?("10101000.10101000.10101000.10101000")
