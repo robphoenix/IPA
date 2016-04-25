@@ -200,9 +200,12 @@ defmodule IPA do
   def to_bits(ip)
 
   def to_bits(addr)  do
-    addr
-    |> validate_and_transform_to_int_list
-    |> transform_addr(2, 8, ".", "")
+    ip_list = addr |> to_ip_list
+    if validate_ip_list(ip_list) do
+      transform_addr(ip_list, 2, 8, ".", "")
+    else
+      raise IPError
+    end
   end
 
   @doc """

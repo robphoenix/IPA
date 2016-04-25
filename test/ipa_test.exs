@@ -62,9 +62,11 @@ defmodule IPATest do
     end
   end
 
-  @tag :pending
-  test "dot decimal address to bits" do
+  test "addresses to bits" do
     assert IPA.to_bits("192.168.0.1") == "11000000.10101000.00000000.00000001"
+    assert IPA.to_bits({192, 168, 0, 1}) == "11000000.10101000.00000000.00000001"
+    assert IPA.to_bits("0b11000000101010000000000000000001") == "11000000.10101000.00000000.00000001"
+    assert IPA.to_bits("0xC0A80001") == "11000000.10101000.00000000.00000001"
   end
 
   @tag :pending
