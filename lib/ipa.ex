@@ -32,9 +32,29 @@ defmodule IPA do
   """
   @spec valid_address?(addr) :: boolean
   def valid_address?(addr) do
-    addr
-    |> to_ip_list
-    |> validate_ip_list
+    if pre_transformation_validations(addr) do
+      addr |> to_ip_list |> validate_ip_list
+    else
+      false
+    end
+  end
+
+  # this whole pre-transformations validations feels REALLY clunky
+  defp pre_transformation_validations(addr) when is_tuple(addr), do: true
+  defp pre_transformation_validations(addr) do
+    cond do
+      String.at(addr, 1) == "b" and String.length(addr) != 34 ->
+        false
+      String.at(addr, 1) == "b" and not just_ones_and_zeroes?(addr) ->
+        false
+      number_of_dots(addr) > 3 ->
+        false
+      String.length(addr) == 35 and not just_ones_and_zeroes?(String.replace(addr, ".", "")) ->
+        false
+      String.at(addr, 1) == "x" and String.length(addr) != 10 ->
+        false
+      true -> true
+    end
   end
 
   defp to_ip_list(addr) do
@@ -42,12 +62,12 @@ defmodule IPA do
       is_tuple(addr) ->
         Tuple.to_list(addr)
       String.at(addr, 1) == "x" ->
-        addr |> hex_to_ip_list
+        hex_to_ip_list(addr)
       String.at(addr, 1) == "b" ->
-        addr |> bin_to_ip_list
-      number_of_dots(addr) <= 3 ->
-        addr |> dotted_to_ip_list
-      number_of_dots(addr) > 3 ->
+        bin_to_ip_list(addr)
+      String.contains?(addr, ".") ->
+        dotted_to_ip_list(addr)
+      true ->
         false
     end
   end
@@ -62,6 +82,13 @@ defmodule IPA do
     <<48, 98, a::binary-size(8), b::binary-size(8), c::binary-size(8), d::binary-size(8)>> = addr
     [a, b, c, d]
     |> Enum.map(&String.to_integer(&1, 2))
+  end
+
+  def just_ones_and_zeroes?(bin) do
+    bin
+    |> String.slice(2..-1)
+    |> String.graphemes
+    |> Enum.all?(fn(x) -> x == "0" || x == "1" end)
   end
 
   defp dotted_to_ip_list(addr) do
