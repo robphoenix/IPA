@@ -1,13 +1,30 @@
 defmodule IPATest do
   use ExUnit.Case
-  doctest IPA
+  # doctest IPA
 
-  ExUnit.configure trace: true
+  ExUnit.configure exclude: :pending, trace: true
 
-  test "valid address" do
+  test "valid dotted decimal address" do
     assert IPA.valid_address?("192.168.0.1")
   end
 
+  test "valid binary address" do
+    assert IPA.valid_address?("0b11000000101010000000000000000001")
+  end
+
+  test "valid bits address" do
+    assert IPA.valid_address?("11000000.10101000.00000000.00000001")
+  end
+
+  test "valid hex address" do
+    assert IPA.valid_address?("0xC0A80001")
+  end
+
+  test "valid octets address" do
+    assert IPA.valid_address?({192, 168, 0, 1})
+  end
+
+  @tag :pending
   test "valid subnet mask" do
     assert IPA.valid_mask?(24)
     assert IPA.valid_mask?("255.255.255.0")
@@ -21,6 +38,7 @@ defmodule IPATest do
     refute IPA.valid_address?("192.168.0.1.")
   end
 
+  @tag :pending
   test "invalid subnet masks" do
     refute IPA.valid_mask?("11111111.00000000.11111111.00000000")
     refute IPA.valid_mask?("10101000.10101000.10101000.10101000")
@@ -31,40 +49,48 @@ defmodule IPATest do
     refute IPA.valid_mask?(33)
   end
 
+  @tag :pending
   test "dot decimal address to hex" do
     assert IPA.to_hex("192.168.0.1") == "0xC0A80001"
   end
 
+  @tag :pending
   test "invalid dot decimal address to hex raises error" do
     assert_raise IPError, "Invalid IP Address", fn ->
       IPA.to_hex("192.168.256.256")
     end
   end
 
+  @tag :pending
   test "dot decimal address to bits" do
     assert IPA.to_bits("192.168.0.1") == "11000000.10101000.00000000.00000001"
   end
 
+  @tag :pending
   test "invalid dot decimal address to bits raises error" do
     assert_raise IPError, "Invalid IP Address", fn ->
       IPA.to_bits("192.168.256.256")
     end
   end
 
+  @tag :pending
   test "dot decimal address to binary" do
     assert IPA.to_binary("192.168.0.1") == "0b11000000101010000000000000000001"
   end
 
+  @tag :pending
   test "invalid dot decimal address to binary raises error" do
     assert_raise IPError, "Invalid IP Address", fn ->
       IPA.to_binary("192.168.256.256")
     end
   end
 
+  @tag :pending
   test "slash notation subnet mask to binary" do
     assert IPA.to_binary(24) == "0b11111111111111111111111100000000"
   end
 
+  @tag :pending
   test "invalid slash notation subnet mask raises error" do
     assert_raise SubnetError, "Invalid Subnet Mask", fn ->
       IPA.to_binary(-1)
@@ -74,20 +100,24 @@ defmodule IPATest do
     end
   end
 
+  @tag :pending
   test "dot decimal address to octets" do
     assert IPA.to_octets("192.168.0.1") == {192, 168, 0, 1}
   end
 
+  @tag :pending
   test "invalid dot decimal address to octets raises error" do
     assert_raise IPError, "Invalid IP Address", fn ->
       IPA.to_octets("192.168.256.256")
     end
   end
 
+  @tag :pending
   test "public address is not reserved" do
     refute IPA.reserved?("8.8.8.8")
   end
 
+  @tag :pending
   test "private addresses are reserved" do
     assert IPA.reserved?("0.0.0.0")
     assert IPA.reserved?("10.0.0.0")
@@ -107,6 +137,7 @@ defmodule IPATest do
     assert IPA.reserved?("255.255.255.255")
   end
 
+  @tag :pending
   test "IP Address blocks" do
     assert IPA.block("8.8.8.8") == :public
     assert IPA.block("0.0.0.0") == :this_network

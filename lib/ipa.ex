@@ -36,7 +36,60 @@ defmodule IPA do
       false
   """
   @spec valid_address?(addr) :: boolean
-  def valid_address?(addr), do: Regex.match?(@addr_regex, addr)
+  def valid_address?(addr) when is_tuple(addr) do
+    addr
+    |> Tuple.to_list
+    |> validate_ip_list
+  end
+  def valid_address?(addr) do
+    cond do
+      String.at(addr, 1) == "x" ->
+        validate_hex(addr)
+      String.at(addr, 1) == "b" ->
+        validate_bin(addr)
+      number_of_dots(addr) > 3 ->
+        false
+      number_of_dots(addr) <= 3 ->
+        validate_dotted(addr)
+    end
+  end
+
+  defp validate_hex(addr) do
+    <<48, 120, a::binary-size(2), b::binary-size(2), c::binary-size(2), d::binary-size(2)>> = addr
+    [a, b, c, d]
+    |> Enum.map(&String.to_integer(&1, 16))
+    |> validate_ip_list
+  end
+
+  defp validate_bin(addr) do
+    <<48, 98, a::binary-size(8), b::binary-size(8), c::binary-size(8), d::binary-size(8)>> = addr
+    [a, b, c, d]
+    |> Enum.map(&String.to_integer(&1, 2))
+    |> validate_ip_list
+  end
+
+  defp validate_dotted(addr) do
+    addr = String.split(addr, ".")
+    cond do
+      Enum.any?(addr, fn(x) -> String.length(x) > 3 end) ->
+        Enum.map(addr, &String.to_integer(&1, 2)) |> validate_ip_list
+      true ->
+        Enum.map(addr, &String.to_integer/1) |> validate_ip_list
+    end
+  end
+
+  defp validate_ip_list(addr) when length(addr) === 4 do
+    Enum.all?(addr, fn (x) -> x > -1 && x < 256 end)
+  end
+  defp validate_ip_list(_), do: false
+
+  defp number_of_dots(addr) do
+    addr
+    |> String.graphemes
+    |> Enum.filter(&(&1 == "."))
+    |> length
+  end
+
 
   @doc """
   Checks if the given subnet mask is valid.
