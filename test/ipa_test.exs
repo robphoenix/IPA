@@ -112,12 +112,10 @@ defmodule IPATest do
     end
   end
 
-  @tag :pending
   test "public address is not reserved" do
     refute IPA.reserved?("8.8.8.8")
   end
 
-  @tag :pending
   test "private addresses are reserved" do
     assert IPA.reserved?("0.0.0.0")
     assert IPA.reserved?("10.0.0.0")
@@ -137,7 +135,6 @@ defmodule IPATest do
     assert IPA.reserved?("255.255.255.255")
   end
 
-  @tag :pending
   test "IP Address blocks" do
     assert IPA.block("8.8.8.8") == :public
     assert IPA.block("0.0.0.0") == :this_network

@@ -44,37 +44,35 @@ defmodule IPA do
   def valid_address?(addr) do
     cond do
       String.at(addr, 1) == "x" ->
-        validate_hex(addr)
+        addr |> hex_to_ip_list |> validate_ip_list
       String.at(addr, 1) == "b" ->
-        validate_bin(addr)
+        addr |> bin_to_ip_list |> validate_ip_list
       number_of_dots(addr) > 3 ->
         false
       number_of_dots(addr) <= 3 ->
-        validate_dotted(addr)
+        addr |> dotted_to_ip_list |> validate_ip_list
     end
   end
 
-  defp validate_hex(addr) do
+  defp hex_to_ip_list(addr) do
     <<48, 120, a::binary-size(2), b::binary-size(2), c::binary-size(2), d::binary-size(2)>> = addr
     [a, b, c, d]
     |> Enum.map(&String.to_integer(&1, 16))
-    |> validate_ip_list
   end
 
-  defp validate_bin(addr) do
+  defp bin_to_ip_list(addr) do
     <<48, 98, a::binary-size(8), b::binary-size(8), c::binary-size(8), d::binary-size(8)>> = addr
     [a, b, c, d]
     |> Enum.map(&String.to_integer(&1, 2))
-    |> validate_ip_list
   end
 
-  defp validate_dotted(addr) do
+  defp dotted_to_ip_list(addr) do
     addr = String.split(addr, ".")
     cond do
       Enum.any?(addr, fn(x) -> String.length(x) > 3 end) ->
-        Enum.map(addr, &String.to_integer(&1, 2)) |> validate_ip_list
+        Enum.map(addr, &String.to_integer(&1, 2))
       true ->
-        Enum.map(addr, &String.to_integer/1) |> validate_ip_list
+        Enum.map(addr, &String.to_integer/1)
     end
   end
 
