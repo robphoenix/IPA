@@ -202,7 +202,11 @@ defmodule IPA do
   def to_binary(ip)
 
   def to_binary(addr) do
-    ip_list = addr |> to_ip_list
+    ip_list = if pre_transformation_validations(addr) do
+      addr |> to_ip_list
+    else
+      raise IPError
+    end
     if validate_ip_list(ip_list) do
       transform_addr(ip_list, 2, 8, "", "0b")
     else
@@ -227,7 +231,11 @@ defmodule IPA do
   def to_bits(ip)
 
   def to_bits(addr)  do
-    ip_list = addr |> to_ip_list
+    ip_list = if pre_transformation_validations(addr) do
+      addr |> to_ip_list
+    else
+      raise IPError
+    end
     if validate_ip_list(ip_list) do
       transform_addr(ip_list, 2, 8, ".", "")
     else
@@ -249,7 +257,11 @@ defmodule IPA do
   def to_hex(ip)
 
   def to_hex(addr) do
-    ip_list = addr |> to_ip_list
+    ip_list = if pre_transformation_validations(addr) do
+      addr |> to_ip_list
+    else
+      raise IPError
+    end
     if validate_ip_list(ip_list) do
       transform_addr(ip_list, 16, 2, "", "0x")
     else

@@ -27,92 +27,151 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
 The following functions are available in the `IPA` module:
 
-Check if a dotted decimal address is valid:
+Check if a dotted decimal, dotted binary, hexadecimal, binary
+or 4-element tuple IP address is valid:
 
 ```elixir
-IPA.valid_address?("192.168.0.1")   #=> true
-IPA.valid_address?("192.168.0.256") #=> false
-IPA.valid_address?("192.168.0")     #=> false
-IPA.valid_address?("192.168.0.1.1") #=> false
+iex> IPA.valid_address?("192.168.0.1")
+true
+iex> IPA.valid_address?("192.168.0.256")
+false
+iex> IPA.valid_address?("192.168.0")
+false
+iex> IPA.valid_address?("192.168.0.1.1")
+false
+iex> IPA.valid_address?("11000000.10101000.00000000.00000001")
+true
+iex> IPA.valid_address?("0xC0A80001")
+true
+iex> IPA.valid_address?("0b11000000101010000000000000000001")
+true
+iex> IPA.valid_address?({192, 168, 0, 1})
+true
 ```
 
-> This validity is based on whether the given address contains 4 numbers,
-> separated by 3 dots, between 0 & 255, inclusive. It is slightly imperfect,
-> not recognising the fact that 127.1 can be considered a valid IP address
-> that translates to 127.0.0.1, just so you know.
+> This validity is slightly imperfect as it does not recognise
+> the fact that 127.1 can be considered a valid IP address
+> that translates to 127.0.0.1.
 
 Check if a dotted decimal or CIDR notation subnet mask is valid:
 
 ```elixir
-IPA.valid_mask?("255.255.255.0") #=> true
-IPA.valid_mask?("192.168.0.1")   #=> false
-IPA.valid_mask?(24)              #=> true
-IPA.valid_mask?(33)              #=> false
+iex> IPA.valid_mask?("255.255.255.0")
+true
+iex> IPA.valid_mask?("192.168.0.1")  
+false
+iex> IPA.valid_mask?(24)             
+true
+iex> IPA.valid_mask?(33)             
+false
+```
+
+Transform an address between dotted decimal, dotted binary, hexadecimal,
+binary and 4-element tuple representation:
+
+```elixir
+# IPA.to_bits
+iex> IPA.to_bits("192.168.0.1")
+"11000000.10101000.00000000.00000001"
+iex> IPA.to_bits("0xC0A80001")
+"11000000.10101000.00000000.00000001"
+iex> IPA.to_bits({192, 168, 0, 1})
+"11000000.10101000.00000000.00000001"
+iex> IPA.to_bits("0b11000000101010000000000000000001")
+"11000000.10101000.00000000.00000001"
+iex> IPA.to_bits("192.168.0.256")
+** (IPError) Invalid IP Address
+    (ipa) lib/ipa.ex:234: IPA.to_bits/1
+
+# IPA.to_hex
+iex> IPA.to_hex("192.168.0.1")
+"0xC0A80001"
+iex> IPA.to_hex("0b11000000101010000000000000000001")
+"0xC0A80001"
+iex> IPA.to_hex("11000000.10101000.00000000.00000001")
+"0xC0A80001"
+iex> IPA.to_hex({192, 168, 0, 1})
+"0xC0A80001"
+iex> IPA.to_hex("192.168.0.256")
+** (IPError) Invalid IP Address
+    (ipa) lib/ipa.ex:256: IPA.to_hex/1
+iex> IPA.to_hex("0b11000000101010000000000000000002")
+** (IPError) Invalid IP Address
+    (ipa) lib/ipa.ex:255: IPA.to_hex/1
+
+# IPA.to_binary
+iex> IPA.to_binary("192.168.0.1")
+"0b11000000101010000000000000000001"
+iex> IPA.to_binary("0xC0A80001")
+"0b11000000101010000000000000000001"
+iex> IPA.to_binary("11000000.10101000.00000000.00000001")
+"0b11000000101010000000000000000001"
+iex> IPA.to_binary({192, 168, 0, 1})
+"0b11000000101010000000000000000001"
+iex> IPA.to_binary({192, 168, 0, 256})
+** (IPError) Invalid IP Address
+    (ipa) lib/ipa.ex:209: IPA.to_binary/1
+
+# IPA.to_octets
+iex> IPA.to_octets("192.168.0.1")
+{192, 168, 0, 1}
+
+# IPA.to_dotted_dec
+...
 ```
 
 Find out if the address is part of a reserved private address block
 (ie. NOT a public address):
 
 ```elixir
-IPA.reserved?("192.168.0.1") #=> true
-IPA.reserved?("8.8.8.8")     #=> false
+iex> IPA.reserved?("192.168.0.1")
+true
+iex> IPA.reserved?("8.8.8.8")    
+false
 ```
 
-Find out which reserved block of addresses an address is a part of. If not
-reserved it will be public, obvs.  A full list of reserved blocks can be found
-in the docs:
+Find out which reserved block of addresses an address is a part of.
+If not reserved it will be public, obvs.  A full list of reserved
+blocks can be found in the docs:
 
 ```elixir
-IPA.block("192.168.0.1") #=> :rfc1918
-IPA.block("10.0.1.0")    #=> :rfc1918
-IPA.block("127.0.0.1")   #=> :loopback
-IPA.block("8.8.8.8")     #=> :public
+iex> IPA.block("192.168.0.1")
+:rfc1918
+iex> IPA.block("10.0.1.0")   
+:rfc1918
+iex> IPA.block("127.0.0.1")  
+:loopback
+iex> IPA.block("8.8.8.8")    
+:public
 ```
 
-Transform a dotted decimal address into it's hexadecimal, binary or
-dotted binary representation, or get the octets as a 4 element tuple:
 
-```elixir
-IPA.to_hex("192.168.0.1")    #=> "0xC0A80001"
-
-IPA.to_binary("192.168.0.1") #=> "0b11000000101010000000000000000001"
-
-IPA.to_bits("192.168.0.1")   #=> "11000000.10101000.00000000.00000001"
-
-IPA.to_octets("192.168.0.1") #=> {192, 168, 0, 1}
-```
 
 You can also use the following functions with subnet masks, both dotted
 decimal, and CIDR notation:
 
 ```elixir
-IPA.to_bits("255.255.255.0")   #=> "11111111.11111111.11111111.00000000"
-IPA.to_bits(24)                #=> "11111111.11111111.11111111.00000000"
+iex> IPA.to_bits("255.255.255.0")  
+"11111111.11111111.11111111.00000000"
+iex> IPA.to_bits(24)               
+"11111111.11111111.11111111.00000000"
 
-IPA.to_binary("255.255.255.0") #=> "0b11111111111111111111111100000000"
-IPA.to_binary(24)              #=> "0b11111111111111111111111100000000"
+iex> IPA.to_binary("255.255.255.0")
+"0b11111111111111111111111100000000"
+iex> IPA.to_binary(24)             
+"0b11111111111111111111111100000000"
 
-IPA.to_octets("255.255.255.0") #=> {255, 255, 255, 0}
-IPA.to_octets(24)              #=> {255, 255, 255, 0}
+iex> IPA.to_octets("255.255.255.0")
+{255, 255, 255, 0}
+iex> IPA.to_octets(24)             
+{255, 255, 255, 0}
 
-IPA.to_dotted_dec(24)          #=> "255.255.255.0"
+iex> IPA.to_dotted_dec(24)         
+"255.255.255.0"
 
-IPA.to_cidr("255.255.255.0")   #=> 24
+iex> IPA.to_cidr("255.255.255.0")  
+24
 ```
-
-## TODO
-
-**this** - *"You should probably parse to some internal representation that requires the least parsing or generating...which might just be a binary of some kind. Or you could just use what Erlang likes to, which is the 4-tuple."* - asonge
-
-- validity checks for hex, binary & tuple masks
-- validity checks for hex, binary, bits & tuple addresses
-- ability to use hex, binary, bits & tuple notation with `to_dotted_decimal`
-- ability to use hex, bits & tuple notation with `to_binary`
-- ability to use hex, binary & tuple notation with `to_bits`
-- ability to use cidr, binary, bits & tuple notation with `to_hex`
-- ability to use hex, binary & bits notation with `to_octets`
-- ability to use hex, binary, bits & tuple notation with `to_cidr`
-- improve transformations & validation
 
 ## Docs
 
