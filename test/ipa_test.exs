@@ -1,6 +1,6 @@
 defmodule IPATest do
   use ExUnit.Case
-  # doctest IPA
+  doctest IPA
 
   ExUnit.configure exclude: :pending, trace: true
 
@@ -116,21 +116,6 @@ defmodule IPATest do
     refute IPA.valid_mask?("256.256.0.0")
     refute IPA.valid_mask?(0)
     refute IPA.valid_mask?(33)
-  end
-
-  @tag :pending
-  test "slash notation subnet mask to binary" do
-    assert IPA.to_binary(24) == "0b11111111111111111111111100000000"
-  end
-
-  @tag :pending
-  test "invalid slash notation subnet mask raises error" do
-    assert_raise SubnetError, "Invalid Subnet Mask", fn ->
-      IPA.to_binary(-1)
-    end
-    assert_raise SubnetError, "Invalid Subnet Mask", fn ->
-      IPA.to_binary(33)
-    end
   end
 
   test "public address is not reserved" do

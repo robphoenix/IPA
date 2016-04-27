@@ -25,10 +25,20 @@ defmodule IPA do
       true
       iex> IPA.valid_address?("8.8.8.8")
       true
-      iex> IPA.valid_address?("10.0.0.256")
+      iex> IPA.valid_address?("192.168.0.256")
       false
-      iex> IPA.valid_address?("10.0.0.")
+      iex> IPA.valid_address?("192.168.0")
       false
+      iex> IPA.valid_address?("192.168.0.1.1")
+      false
+      iex> IPA.valid_address?("11000000.10101000.00000000.00000001")
+      true
+      iex> IPA.valid_address?("0xC0A80001")
+      true
+      iex> IPA.valid_address?("0b11000000101010000000000000000001")
+      true
+      iex> IPA.valid_address?({192, 168, 0, 1})
+      true
   """
   @spec valid_address?(addr) :: boolean
   def valid_address?(addr) do
@@ -84,7 +94,7 @@ defmodule IPA do
     |> Enum.map(&String.to_integer(&1, 2))
   end
 
-  def just_ones_and_zeroes?(bin) do
+  defp just_ones_and_zeroes?(bin) do
     bin
     |> String.slice(2..-1)
     |> String.graphemes
@@ -193,9 +203,15 @@ defmodule IPA do
 
       iex> IPA.to_binary("192.168.0.1")
       "0b11000000101010000000000000000001"
+      iex> IPA.to_binary("0xC0A80001")
+      "0b11000000101010000000000000000001"
+      iex> IPA.to_binary("11000000.10101000.00000000.00000001")
+      "0b11000000101010000000000000000001"
+      iex> IPA.to_binary({192, 168, 0, 1})
+      "0b11000000101010000000000000000001"
+      iex> IPA.to_binary({192, 168, 0, 256})
+      ** (IPError) Invalid IP Address
       iex> IPA.to_binary("255.255.255.0")
-      "0b11111111111111111111111100000000"
-      iex> IPA.to_binary(24)
       "0b11111111111111111111111100000000"
   """
   @spec to_binary(ip) :: String.t
@@ -222,9 +238,15 @@ defmodule IPA do
 
       iex> IPA.to_bits("192.168.0.1")
       "11000000.10101000.00000000.00000001"
+      iex> IPA.to_bits("0xC0A80001")
+      "11000000.10101000.00000000.00000001"
+      iex> IPA.to_bits({192, 168, 0, 1})
+      "11000000.10101000.00000000.00000001"
+      iex> IPA.to_bits("0b11000000101010000000000000000001")
+      "11000000.10101000.00000000.00000001"
+      iex> IPA.to_bits("192.168.0.256")
+      ** (IPError) Invalid IP Address
       iex> IPA.to_bits("255.255.255.0")
-      "11111111.11111111.11111111.00000000"
-      iex> IPA.to_bits(24)
       "11111111.11111111.11111111.00000000"
   """
   @spec to_bits(ip) :: String.t
@@ -252,6 +274,16 @@ defmodule IPA do
 
       iex> IPA.to_hex("192.168.0.1")
       "0xC0A80001"
+      iex> IPA.to_hex("0b11000000101010000000000000000001")
+      "0xC0A80001"
+      iex> IPA.to_hex("11000000.10101000.00000000.00000001")
+      "0xC0A80001"
+      iex> IPA.to_hex({192, 168, 0, 1})
+      "0xC0A80001"
+      iex(41)> IPA.to_hex("255.255.255.0")
+      "0xFFFFFF00"
+      iex> IPA.to_hex("192.168.0.256")
+      ** (IPError) Invalid IP Address
   """
   @spec to_hex(ip) :: String.t
   def to_hex(ip)
@@ -279,8 +311,6 @@ defmodule IPA do
       iex> IPA.to_octets("192.168.0.1")
       {192, 168, 0, 1}
       iex> IPA.to_octets("255.255.255.0")
-      {255, 255, 255, 0}
-      iex> IPA.to_octets(24)
       {255, 255, 255, 0}
   """
   @spec to_octets(ip) :: {integer}
@@ -326,6 +356,13 @@ defmodule IPA do
 
   @doc """
   Checks whether a given IP address is reserved.
+
+  ## Examples
+
+      iex> IPA.reserved?("192.168.0.1")
+      true
+      iex> IPA.reserved?("8.8.8.8")
+      false
   """
   @spec reserved?(String.t) :: boolean
   def reserved?(addr) do
