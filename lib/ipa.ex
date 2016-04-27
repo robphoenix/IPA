@@ -272,10 +272,10 @@ defmodule IPA do
 
   ## Example
 
-      iex(41)> IPA.to_hex("255.255.255.0")
-      "0xFFFFFF00"
       iex> IPA.to_hex({192, 168, 0, 1})
       "0xC0A80001"
+      iex> IPA.to_hex("255.255.255.0")
+      "0xFFFFFF00"
       iex> IPA.to_hex("192.168.0.1")
       "0xC0A80001"
       iex> IPA.to_hex("0b11000000101010000000000000000001")
