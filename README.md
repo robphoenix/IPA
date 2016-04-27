@@ -53,7 +53,7 @@ true
 > the fact that 127.1 can be considered a valid IP address
 > that translates to 127.0.0.1.
 
-Check if a dotted decimal or CIDR notation subnet mask is valid:
+Check if a dotted decimal, dotted binary or CIDR notation subnet mask is valid:
 
 ```elixir
 iex> IPA.valid_mask?("255.255.255.0")
@@ -63,6 +63,10 @@ false
 iex> IPA.valid_mask?(24)             
 true
 iex> IPA.valid_mask?(33)             
+false
+iex> IPA.valid_mask?("11111111.11111111.11111111.00000000")
+true
+iex> IPA.valid_mask?("10101000.10101000.00000000.00000000")
 false
 ```
 
@@ -147,23 +151,16 @@ iex> IPA.block("8.8.8.8")
 
 
 
-You can also use the following functions with subnet masks, both dotted
-decimal, and CIDR notation:
+You can also use the following functions with subnet masks:
 
 ```elixir
 iex> IPA.to_bits("255.255.255.0")  
 "11111111.11111111.11111111.00000000"
-iex> IPA.to_bits(24)               
-"11111111.11111111.11111111.00000000"
 
 iex> IPA.to_binary("255.255.255.0")
 "0b11111111111111111111111100000000"
-iex> IPA.to_binary(24)             
-"0b11111111111111111111111100000000"
 
 iex> IPA.to_octets("255.255.255.0")
-{255, 255, 255, 0}
-iex> IPA.to_octets(24)             
 {255, 255, 255, 0}
 
 iex> IPA.to_dotted_dec(24)         
