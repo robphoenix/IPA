@@ -89,7 +89,6 @@ iex> IPA.to_bits("0b11000000101010000000000000000001")
 "11000000.10101000.00000000.00000001"
 iex> IPA.to_bits("192.168.0.256")
 ** (IPError) Invalid IP Address
-    (ipa) lib/ipa.ex:234: IPA.to_bits/1
 
 # IPA.to_hex
 iex> IPA.to_hex("192.168.0.1")
@@ -102,10 +101,8 @@ iex> IPA.to_hex({192, 168, 0, 1})
 "0xC0A80001"
 iex> IPA.to_hex("192.168.0.256")
 ** (IPError) Invalid IP Address
-    (ipa) lib/ipa.ex:256: IPA.to_hex/1
 iex> IPA.to_hex("0b11000000101010000000000000000002")
 ** (IPError) Invalid IP Address
-    (ipa) lib/ipa.ex:255: IPA.to_hex/1
 
 # IPA.to_binary
 iex> IPA.to_binary("192.168.0.1")
@@ -118,7 +115,6 @@ iex> IPA.to_binary({192, 168, 0, 1})
 "0b11000000101010000000000000000001"
 iex> IPA.to_binary({192, 168, 0, 256})
 ** (IPError) Invalid IP Address
-    (ipa) lib/ipa.ex:209: IPA.to_binary/1
 
 # IPA.to_octets
 iex> IPA.to_octets("192.168.0.1")
@@ -174,27 +170,6 @@ iex> IPA.block("127.0.0.1")
 :loopback
 iex> IPA.block("8.8.8.8")    
 :public
-```
-
-
-
-You can also use the following functions with subnet masks:
-
-```elixir
-iex> IPA.to_bits("255.255.255.0")  
-"11111111.11111111.11111111.00000000"
-
-iex> IPA.to_binary("255.255.255.0")
-"0b11111111111111111111111100000000"
-
-iex> IPA.to_octets("255.255.255.0")
-{255, 255, 255, 0}
-
-iex> IPA.to_dotted_dec(24)         
-"255.255.255.0"
-
-iex> IPA.to_cidr("255.255.255.0")  
-24
 ```
 
 ## Docs
