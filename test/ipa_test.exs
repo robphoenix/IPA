@@ -75,14 +75,24 @@ defmodule IPATest do
     assert IPA.to_binary("11000000.10101000.00000000.00000001") == "0b11000000101010000000000000000001"
   end
 
+  test "addresses to octets" do
+    assert IPA.to_octets("192.168.0.1") == {192, 168, 0, 1}
+    assert IPA.to_octets("0b11000000101010000000000000000001") == {192, 168, 0, 1}
+    assert IPA.to_octets("0xC0A80001") == {192, 168, 0, 1}
+    assert IPA.to_octets("11000000.10101000.00000000.00000001") == {192, 168, 0, 1}
+  end
+
+  test "addresses to dotted decimal" do
+    assert IPA.to_dotted_dec({192, 168, 0, 1}) == "192.168.0.1"
+    assert IPA.to_dotted_dec("0b11000000101010000000000000000001") == "192.168.0.1"
+    assert IPA.to_dotted_dec("0xC0A80001") == "192.168.0.1"
+    assert IPA.to_dotted_dec("11000000.10101000.00000000.00000001") == "192.168.0.1"
+  end
+
   test "invalid dot decimal address to binary raises error" do
     assert_raise IPError, "Invalid IP Address", fn ->
       IPA.to_binary("192.168.256.256")
     end
-  end
-
-  test "dot decimal address to octets" do
-    assert IPA.to_octets("192.168.0.1") == {192, 168, 0, 1}
   end
 
   test "invalid dot decimal address to octets raises error" do
@@ -107,6 +117,9 @@ defmodule IPATest do
     assert IPA.valid_mask?(24)
     assert IPA.valid_mask?("255.255.255.0")
     assert IPA.valid_mask?("11111111.11111111.11111111.00000000")
+    assert IPA.valid_mask?("0xFFFFFF00")
+    assert IPA.valid_mask?("0b11111111111111111111111100000000")
+    assert IPA.valid_mask?({255, 255, 255, 0})
   end
 
   test "invalid subnet masks" do
@@ -117,6 +130,8 @@ defmodule IPATest do
     refute IPA.valid_mask?("256.256.0.0")
     refute IPA.valid_mask?(0)
     refute IPA.valid_mask?(33)
+    refute IPA.valid_mask?("0b11000000101010000000000000000001")
+    refute IPA.valid_mask?("0xC0A80001")
   end
 
   test "public address is not reserved" do

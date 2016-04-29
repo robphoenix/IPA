@@ -123,7 +123,6 @@ defmodule IPA do
     |> length
   end
 
-
   @doc """
   Checks if the given subnet mask is valid.
 
@@ -144,6 +143,12 @@ defmodule IPA do
       true
       iex> IPA.valid_mask?("10101000.10101000.00000000.00000000")
       false
+      iex> IPA.valid_mask?("0xFFFFFF00")
+      true
+      iex> IPA.valid_mask?("0b11111111111111111111111100000000")
+      true
+      iex> IPA.valid_mask?({255, 255, 255, 0})
+      true
   """
   @spec valid_mask?(mask) :: boolean
   def valid_mask?(mask) when is_integer(mask) do
@@ -152,20 +157,24 @@ defmodule IPA do
       _ -> false
     end
   end
+  def valid_mask?(mask) when is_tuple(mask) do
+    mask |> mask_to_bits |> valid_mask?
+  end
   def valid_mask?(mask) do
-    if Regex.match?(@mask_regex, mask) do
-      [h|t] = mask |> String.replace(".", "") |> String.to_char_list
-      binary_validation(h, t, [])
-    else
-      [h|t] = mask
-      |> String.split(".")
-      |> Stream.map(&String.to_integer/1)
-      |> Stream.map(&Integer.to_string(&1, 2))
-      |> Enum.join
-      |> String.to_char_list
-
-      binary_validation(h, t, [])
+    cond do
+      Regex.match?(@mask_regex, mask) ->
+        [h|t] = mask
+          |> String.replace(".", "")
+          |> String.to_char_list
+        binary_validation(h, t, [])
+      valid_address?(mask) ->
+        mask |> mask_to_bits |> valid_mask?
+      true -> false
     end
+  end
+
+  defp mask_to_bits(mask) do
+    mask |> to_ip_list |> transform_addr(2, 8, ".", "")
   end
 
   # Check to make sure that 1s don't follow 0s
@@ -181,12 +190,23 @@ defmodule IPA do
   end
 
   @doc """
-  Converts CIDR notation to dotted decimal.
+  Converts CIDR, binary, hexadecimal, dotted binary and tuple
+  notation IP address/subnet mask to dotted decimal.
 
   ## Example
 
       iex> IPA.to_dotted_dec(24)
       "255.255.255.0"
+      iex> IPA.to_dotted_dec({192, 168, 0, 1})
+      "192.168.0.1"
+      iex> IPA.to_dotted_dec("0b11000000101010000000000000000001")
+      "192.168.0.1"
+      iex> IPA.to_dotted_dec("0xC0A80001")
+      "192.168.0.1"
+      iex> IPA.to_dotted_dec("11000000.10101000.00000000.00000001")
+      "192.168.0.1"
+      iex> IPA.to_dotted_dec(33)
+      ** (SubnetError) Invalid Subnet Mask
   """
   @spec to_dotted_dec(ip) :: String.t
   def to_dotted_dec(mask) when is_integer(mask) do
@@ -194,10 +214,22 @@ defmodule IPA do
     |> validate_and_transform_to_int_list
     |> Enum.join(".")
   end
+  def to_dotted_dec(ip) do
+    ip_list = if pre_transformation_validations(ip) do
+      ip |> to_ip_list
+    else
+      raise IPError
+    end
+    if validate_ip_list(ip_list) do
+      Enum.join(ip_list, ".")
+    else
+      raise IPError
+    end
+  end
 
   @doc """
-  Converts a dotted decimal IP address/Subnet Mask, or a CIDR
-  notation numerical Subnet Mask to a `0b` prefixed binary number.
+  Converts CIDR, binary, hexadecimal, dotted binary and tuple
+  notation IP address/subnet mask to a `0b` prefixed binary number.
 
   ## Example
 
@@ -209,10 +241,10 @@ defmodule IPA do
       "0b11000000101010000000000000000001"
       iex> IPA.to_binary({192, 168, 0, 1})
       "0b11000000101010000000000000000001"
-      iex> IPA.to_binary({192, 168, 0, 256})
-      ** (IPError) Invalid IP Address
       iex> IPA.to_binary("255.255.255.0")
       "0b11111111111111111111111100000000"
+      iex> IPA.to_binary("255.255.256.0")
+      ** (IPError) Invalid IP Address
   """
   @spec to_binary(ip) :: String.t
   def to_binary(ip)
@@ -231,8 +263,8 @@ defmodule IPA do
   end
 
   @doc """
-  Converts a dotted decimal IP address/Subnet Mask, or a CIDR
-  notation numerical Subnet Mask to binary bits.
+  Converts CIDR, binary, hexadecimal, dotted binary and tuple
+  notation IP address/subnet mask to binary bits.
 
   ## Example
 
@@ -244,10 +276,10 @@ defmodule IPA do
       "11000000.10101000.00000000.00000001"
       iex> IPA.to_bits("0b11000000101010000000000000000001")
       "11000000.10101000.00000000.00000001"
-      iex> IPA.to_bits("192.168.0.256")
-      ** (IPError) Invalid IP Address
       iex> IPA.to_bits("255.255.255.0")
       "11111111.11111111.11111111.00000000"
+      iex> IPA.to_bits("192.168.0.256")
+      ** (IPError) Invalid IP Address
   """
   @spec to_bits(ip) :: String.t
   def to_bits(ip)
@@ -266,8 +298,8 @@ defmodule IPA do
   end
 
   @doc """
-  Converts a dotted decimal IP address/Subnet Mask, or a CIDR
-  notation numerical Subnet Mask to a `0x` prefixed hexadecimal
+  Converts CIDR, binary, hexadecimal, dotted binary and tuple
+  notation IP address/subnet mask to a `0x` prefixed hexadecimal
   number.
 
   ## Example
@@ -312,12 +344,27 @@ defmodule IPA do
       {192, 168, 0, 1}
       iex> IPA.to_octets("255.255.255.0")
       {255, 255, 255, 0}
+      iex> IPA.to_octets("0b11000000101010000000000000000001")
+      {192, 168, 0, 1}
+      iex> IPA.to_octets("0xC0A80001")
+      {192, 168, 0, 1}
+      iex> IPA.to_octets("11000000.10101000.00000000.00000001")
+      {192, 168, 0, 1}
+      iex> IPA.to_octets("192.168.0.256")
+      ** (IPError) Invalid IP Address
   """
   @spec to_octets(ip) :: {integer}
   def to_octets(ip) do
-    ip
-    |> validate_and_transform_to_int_list
-    |> List.to_tuple
+    ip_list = if pre_transformation_validations(ip) do
+      ip |> to_ip_list
+    else
+      raise IPError
+    end
+    if validate_ip_list(ip_list) do
+      List.to_tuple(ip_list)
+    else
+      raise IPError
+    end
   end
 
   @doc """

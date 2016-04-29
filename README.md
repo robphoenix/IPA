@@ -66,6 +66,12 @@ iex> IPA.valid_mask?("11111111.11111111.11111111.00000000")
 true
 iex> IPA.valid_mask?("10101000.10101000.00000000.00000000")
 false
+iex> IPA.valid_mask?("0xFFFFFF00")
+true
+iex> IPA.valid_mask?("0b11111111111111111111111100000000")
+true
+iex> IPA.valid_mask?({255, 255, 255, 0})
+true
 ```
 
 Transform an address between dotted decimal, dotted binary, hexadecimal,
@@ -117,9 +123,32 @@ iex> IPA.to_binary({192, 168, 0, 256})
 # IPA.to_octets
 iex> IPA.to_octets("192.168.0.1")
 {192, 168, 0, 1}
+iex> IPA.to_octets("255.255.255.0")
+{255, 255, 255, 0}
+iex> IPA.to_octets("0b11000000101010000000000000000001")
+{192, 168, 0, 1}
+iex> IPA.to_octets("0xC0A80001")
+{192, 168, 0, 1}
+iex> IPA.to_octets("11000000.10101000.00000000.00000001")
+{192, 168, 0, 1}
+iex> IPA.to_octets("192.168.0.256")
+** (IPError) Invalid IP Address
 
 # IPA.to_dotted_dec
-...
+iex> IPA.to_dotted_dec(24)
+"255.255.255.0"
+iex> IPA.to_dotted_dec({192, 168, 0, 1})
+"192.168.0.1"
+iex> IPA.to_dotted_dec("0b11000000101010000000000000000001")
+"192.168.0.1"
+iex> IPA.to_dotted_dec("0xC0A80001")
+"192.168.0.1"
+iex> IPA.to_dotted_dec("11000000.10101000.00000000.00000001")
+"192.168.0.1"
+iex> IPA.to_dotted_dec(33)
+** (SubnetError) Invalid Subnet Mask
+iex> IPA.to_dotted_dec({192, 168, 0, 256})
+** (IPError) Invalid IP Address
 ```
 
 Find out if the address is part of a reserved private address block
