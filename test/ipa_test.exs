@@ -144,6 +144,7 @@ defmodule IPATest do
     assert IPA.to_cidr("0xFFFFFF00") == 24
     assert IPA.to_cidr("0b11111111111111111111111100000000") == 24
     assert IPA.to_cidr({255, 255, 255, 0}) == 24
+    assert IPA.to_cidr("11111111.11111111.11111111.00000000") == 24
   end
 
   test "invalid dot decimal mask to cidr raises error" do

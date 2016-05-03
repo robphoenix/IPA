@@ -9,11 +9,10 @@ defmodule IPA do
   @type addr :: String.t
   @type mask :: String.t | non_neg_integer
 
-
   @mask_regex ~r/^((1|0){1,8}\.){3}(1|0){1,8}$/
 
   @doc """
-  Checks if the given dotted decimal IP address is valid.
+  Checks if the given IP address is valid.
 
   Does not currently take into consideration
   the fact that `127.1` can be considered a valid IP address
@@ -139,9 +138,6 @@ defmodule IPA do
 
   @doc """
   Checks if the given subnet mask is valid.
-
-  Works with CIDR notation, as well as dotted decimal and
-  dotted binary.
 
   ## Examples
 
@@ -404,7 +400,8 @@ defmodule IPA do
   end
 
   @doc """
-  Converts a dotted decimal Subnet Mask to CIDR notation.
+  Converts a dotted decimal, hex, binary, tuple & dotted binary
+  Subnet Mask to CIDR notation.
 
   ## Examples
 
@@ -415,6 +412,8 @@ defmodule IPA do
       iex> IPA.to_cidr("0b11111111111111111111111100000000")
       24
       iex> IPA.to_cidr({255, 255, 255, 0})
+      24
+      iex> IPA.to_cidr("11111111.11111111.11111111.00000000")
       24
       iex> IPA.to_cidr("192.168.0.1")
       ** (SubnetError) Invalid Subnet Mask

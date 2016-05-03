@@ -138,8 +138,8 @@
     <a href="#to_binary/1">to_binary(ip)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Converts a dotted decimal IP address/Subnet Mask, or a CIDR
-notation numerical Subnet Mask to a <code class="inline">0b</code> prefixed binary number</p>
+    <div class="summary-synopsis"><p>Converts CIDR, binary, hexadecimal, dotted binary and tuple
+notation IP address/subnet mask to a <code class="inline">0b</code> prefixed binary number</p>
 </div>
   
 </div>
@@ -148,8 +148,8 @@ notation numerical Subnet Mask to a <code class="inline">0b</code> prefixed bina
     <a href="#to_bits/1">to_bits(ip)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Converts a dotted decimal IP address/Subnet Mask, or a CIDR
-notation numerical Subnet Mask to binary bits</p>
+    <div class="summary-synopsis"><p>Converts CIDR, binary, hexadecimal, dotted binary and tuple
+notation IP address/subnet mask to binary bits</p>
 </div>
   
 </div>
@@ -164,10 +164,11 @@ notation numerical Subnet Mask to binary bits</p>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="#to_dotted_dec/1">to_dotted_dec(mask)</a>
+    <a href="#to_dotted_dec/1">to_dotted_dec(ip)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Converts CIDR notation to dotted decimal</p>
+    <div class="summary-synopsis"><p>Converts CIDR, binary, hexadecimal, dotted binary and tuple
+notation IP address/subnet mask to dotted decimal</p>
 </div>
   
 </div>
@@ -176,8 +177,8 @@ notation numerical Subnet Mask to binary bits</p>
     <a href="#to_hex/1">to_hex(ip)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Converts a dotted decimal IP address/Subnet Mask, or a CIDR
-notation numerical Subnet Mask to a <code class="inline">0x</code> prefixed hexadecimal
+    <div class="summary-synopsis"><p>Converts CIDR, binary, hexadecimal, dotted binary and tuple
+notation IP address/subnet mask to a <code class="inline">0x</code> prefixed hexadecimal
 number</p>
 </div>
   
@@ -356,6 +357,11 @@ iex&gt; IPA.block(&quot;192.168.0.1&quot;)
   
   <section class="docstring">
     <p>Checks whether a given IP address is reserved.</p>
+<h2>Examples</h2>
+<pre><code class="iex elixir">iex&gt; IPA.reserved?(&quot;192.168.0.1&quot;)
+true
+iex&gt; IPA.reserved?(&quot;8.8.8.8&quot;)
+false</code></pre>
 
   </section>
 </div>
@@ -378,15 +384,23 @@ iex&gt; IPA.block(&quot;192.168.0.1&quot;)
     </div>
   
   <section class="docstring">
-    <p>Converts a dotted decimal IP address/Subnet Mask, or a CIDR
-notation numerical Subnet Mask to a <code class="inline">0b</code> prefixed binary number.</p>
+    <p>Converts CIDR, binary, hexadecimal, dotted binary and tuple
+notation IP address/subnet mask to a <code class="inline">0b</code> prefixed binary number.</p>
 <h2>Example</h2>
 <pre><code class="iex elixir">iex&gt; IPA.to_binary(&quot;192.168.0.1&quot;)
+&quot;0b11000000101010000000000000000001&quot;
+iex&gt; IPA.to_binary(&quot;0xC0A80001&quot;)
+&quot;0b11000000101010000000000000000001&quot;
+iex&gt; IPA.to_binary(&quot;11000000.10101000.00000000.00000001&quot;)
+&quot;0b11000000101010000000000000000001&quot;
+iex&gt; IPA.to_binary({192, 168, 0, 1})
 &quot;0b11000000101010000000000000000001&quot;
 iex&gt; IPA.to_binary(&quot;255.255.255.0&quot;)
 &quot;0b11111111111111111111111100000000&quot;
 iex&gt; IPA.to_binary(24)
-&quot;0b11111111111111111111111100000000&quot;</code></pre>
+&quot;0b11111111111111111111111100000000&quot;
+iex&gt; IPA.to_binary(&quot;255.255.256.0&quot;)
+** (IPError) Invalid IP Address</code></pre>
 
   </section>
 </div>
@@ -409,15 +423,23 @@ iex&gt; IPA.to_binary(24)
     </div>
   
   <section class="docstring">
-    <p>Converts a dotted decimal IP address/Subnet Mask, or a CIDR
-notation numerical Subnet Mask to binary bits.</p>
+    <p>Converts CIDR, binary, hexadecimal, dotted binary and tuple
+notation IP address/subnet mask to binary bits.</p>
 <h2>Example</h2>
 <pre><code class="iex elixir">iex&gt; IPA.to_bits(&quot;192.168.0.1&quot;)
+&quot;11000000.10101000.00000000.00000001&quot;
+iex&gt; IPA.to_bits(&quot;0xC0A80001&quot;)
+&quot;11000000.10101000.00000000.00000001&quot;
+iex&gt; IPA.to_bits({192, 168, 0, 1})
+&quot;11000000.10101000.00000000.00000001&quot;
+iex&gt; IPA.to_bits(&quot;0b11000000101010000000000000000001&quot;)
 &quot;11000000.10101000.00000000.00000001&quot;
 iex&gt; IPA.to_bits(&quot;255.255.255.0&quot;)
 &quot;11111111.11111111.11111111.00000000&quot;
 iex&gt; IPA.to_bits(24)
-&quot;11111111.11111111.11111111.00000000&quot;</code></pre>
+&quot;11111111.11111111.11111111.00000000&quot;
+iex&gt; IPA.to_bits(&quot;192.168.0.256&quot;)
+** (IPError) Invalid IP Address</code></pre>
 
   </section>
 </div>
@@ -434,7 +456,15 @@ iex&gt; IPA.to_bits(24)
     <p>Converts a dotted decimal Subnet Mask to CIDR notation.</p>
 <h2>Examples</h2>
 <pre><code class="iex elixir">iex&gt; IPA.to_cidr(&quot;255.255.255.0&quot;)
-24</code></pre>
+24
+iex&gt; IPA.to_cidr(&quot;0xFFFFFF00&quot;)
+24
+iex&gt; IPA.to_cidr(&quot;0b11111111111111111111111100000000&quot;)
+24
+iex&gt; IPA.to_cidr({255, 255, 255, 0})
+24
+iex&gt; IPA.to_cidr(&quot;192.168.0.1&quot;)
+** (SubnetError) Invalid Subnet Mask</code></pre>
 
   </section>
 </div>
@@ -443,7 +473,7 @@ iex&gt; IPA.to_bits(24)
     <a href="#to_dotted_dec/1" class="detail-link" title="Link to this function">
       <i class="icon-link"></i>
     </a>
-    <span class="signature">to_dotted_dec(mask)</span>
+    <span class="signature">to_dotted_dec(ip)</span>
       
   </div>
   
@@ -457,10 +487,21 @@ iex&gt; IPA.to_bits(24)
     </div>
   
   <section class="docstring">
-    <p>Converts CIDR notation to dotted decimal.</p>
+    <p>Converts CIDR, binary, hexadecimal, dotted binary and tuple
+notation IP address/subnet mask to dotted decimal.</p>
 <h2>Example</h2>
 <pre><code class="iex elixir">iex&gt; IPA.to_dotted_dec(24)
-&quot;255.255.255.0&quot;</code></pre>
+&quot;255.255.255.0&quot;
+iex&gt; IPA.to_dotted_dec({192, 168, 0, 1})
+&quot;192.168.0.1&quot;
+iex&gt; IPA.to_dotted_dec(&quot;0b11000000101010000000000000000001&quot;)
+&quot;192.168.0.1&quot;
+iex&gt; IPA.to_dotted_dec(&quot;0xC0A80001&quot;)
+&quot;192.168.0.1&quot;
+iex&gt; IPA.to_dotted_dec(&quot;11000000.10101000.00000000.00000001&quot;)
+&quot;192.168.0.1&quot;
+iex&gt; IPA.to_dotted_dec(33)
+** (SubnetError) Invalid Subnet Mask</code></pre>
 
   </section>
 </div>
@@ -483,12 +524,24 @@ iex&gt; IPA.to_bits(24)
     </div>
   
   <section class="docstring">
-    <p>Converts a dotted decimal IP address/Subnet Mask, or a CIDR
-notation numerical Subnet Mask to a <code class="inline">0x</code> prefixed hexadecimal
+    <p>Converts CIDR, binary, hexadecimal, dotted binary and tuple
+notation IP address/subnet mask to a <code class="inline">0x</code> prefixed hexadecimal
 number.</p>
 <h2>Example</h2>
-<pre><code class="iex elixir">iex&gt; IPA.to_hex(&quot;192.168.0.1&quot;)
-&quot;0xC0A80001&quot;</code></pre>
+<pre><code class="iex elixir">iex&gt; IPA.to_hex({192, 168, 0, 1})
+&quot;0xC0A80001&quot;
+iex&gt; IPA.to_hex(&quot;255.255.255.0&quot;)
+&quot;0xFFFFFF00&quot;
+iex&gt; IPA.to_hex(&quot;192.168.0.1&quot;)
+&quot;0xC0A80001&quot;
+iex&gt; IPA.to_hex(&quot;0b11000000101010000000000000000001&quot;)
+&quot;0xC0A80001&quot;
+iex&gt; IPA.to_hex(&quot;11000000.10101000.00000000.00000001&quot;)
+&quot;0xC0A80001&quot;
+iex&gt; IPA.to_hex(24)
+&quot;0xFFFFFF00&quot;
+iex&gt; IPA.to_hex(&quot;192.168.0.256&quot;)
+** (IPError) Invalid IP Address</code></pre>
 
   </section>
 </div>
@@ -519,8 +572,16 @@ the 4 octets.</p>
 {192, 168, 0, 1}
 iex&gt; IPA.to_octets(&quot;255.255.255.0&quot;)
 {255, 255, 255, 0}
+iex&gt; IPA.to_octets(&quot;0b11000000101010000000000000000001&quot;)
+{192, 168, 0, 1}
+iex&gt; IPA.to_octets(&quot;0xC0A80001&quot;)
+{192, 168, 0, 1}
+iex&gt; IPA.to_octets(&quot;11000000.10101000.00000000.00000001&quot;)
+{192, 168, 0, 1}
 iex&gt; IPA.to_octets(24)
-{255, 255, 255, 0}</code></pre>
+{255, 255, 255, 0}
+iex&gt; IPA.to_octets(&quot;192.168.0.256&quot;)
+** (IPError) Invalid IP Address</code></pre>
 
   </section>
 </div>
@@ -544,10 +605,7 @@ iex&gt; IPA.to_octets(24)
   
   <section class="docstring">
     <p>Checks if the given dotted decimal IP address is valid.</p>
-<p>Uses a regular expression to check there is exactly
-4 integers between 0 &amp; 255, inclusive, separated by dots.
-Taken from <a href="http://www.regular-expressions.info/numericranges.html">here</a>.
-Therefore does not currently take into consideration
+<p>Does not currently take into consideration
 the fact that <code class="inline">127.1</code> can be considered a valid IP address
 that translates to <code class="inline">127.0.0.1</code>.</p>
 <h2>Examples</h2>
@@ -555,10 +613,20 @@ that translates to <code class="inline">127.0.0.1</code>.</p>
 true
 iex&gt; IPA.valid_address?(&quot;8.8.8.8&quot;)
 true
-iex&gt; IPA.valid_address?(&quot;10.0.0.256&quot;)
+iex&gt; IPA.valid_address?(&quot;192.168.0.256&quot;)
 false
-iex&gt; IPA.valid_address?(&quot;10.0.0.&quot;)
-false</code></pre>
+iex&gt; IPA.valid_address?(&quot;192.168.0&quot;)
+false
+iex&gt; IPA.valid_address?(&quot;192.168.0.1.1&quot;)
+false
+iex&gt; IPA.valid_address?(&quot;11000000.10101000.00000000.00000001&quot;)
+true
+iex&gt; IPA.valid_address?(&quot;0xC0A80001&quot;)
+true
+iex&gt; IPA.valid_address?(&quot;0b11000000101010000000000000000001&quot;)
+true
+iex&gt; IPA.valid_address?({192, 168, 0, 1})
+true</code></pre>
 
   </section>
 </div>
@@ -596,7 +664,13 @@ false
 iex&gt; IPA.valid_mask?(&quot;11111111.11111111.11111111.00000000&quot;)
 true
 iex&gt; IPA.valid_mask?(&quot;10101000.10101000.00000000.00000000&quot;)
-false</code></pre>
+false
+iex&gt; IPA.valid_mask?(&quot;0xFFFFFF00&quot;)
+true
+iex&gt; IPA.valid_mask?(&quot;0b11111111111111111111111100000000&quot;)
+true
+iex&gt; IPA.valid_mask?({255, 255, 255, 0})
+true</code></pre>
 
   </section>
 </div>
