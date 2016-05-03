@@ -10,6 +10,7 @@ defmodule IPA do
   @type mask :: String.t | non_neg_integer
 
   @mask_regex ~r/^((1|0){1,8}\.){3}(1|0){1,8}$/
+  @mask_bits [[], [128], [192], [224], [240], [248], [252], [254], [255]]
 
   @doc """
   Checks if the given IP address is valid.
@@ -46,94 +47,6 @@ defmodule IPA do
     else
       false
     end
-  end
-
-  # this whole pre-transformations validations feels REALLY clunky
-  defp pre_transformation_validations(addr) when is_tuple(addr), do: true
-  defp pre_transformation_validations(mask) when is_integer(mask) do
-    if mask < 33 and mask > 0, do: true, else: false
-  end
-  defp pre_transformation_validations(addr) do
-    cond do
-      String.at(addr, 1) == "b" and String.length(addr) != 34 ->
-        false
-      String.at(addr, 1) == "b" and not just_ones_and_zeroes?(addr) ->
-        false
-      number_of_dots(addr) > 3 ->
-        false
-      String.length(addr) == 35 and not just_ones_and_zeroes?(String.replace(addr, ".", "")) ->
-        false
-      String.at(addr, 1) == "x" and String.length(addr) != 10 ->
-        false
-      true -> true
-    end
-  end
-
-  defp to_ip_list(ip) do
-    cond do
-      is_integer(ip) ->
-        int_to_ip_list(ip)
-      is_tuple(ip) ->
-        Tuple.to_list(ip)
-      String.at(ip, 1) == "x" ->
-        hex_to_ip_list(ip)
-      String.at(ip, 1) == "b" ->
-        bin_to_ip_list(ip)
-      String.contains?(ip, ".") ->
-        dotted_to_ip_list(ip)
-      true ->
-        false
-    end
-  end
-
-  defp int_to_ip_list(mask) do
-    (List.duplicate(255, div(mask, 8)) ++ decode_mask_bits(rem(mask, 8)))
-    |> add_zero_bits
-  end
-
-  defp hex_to_ip_list(addr) when byte_size(addr) == 4 do
-    <<48, 120, a::binary-size(2)>> = addr
-    [String.to_integer(a, 16)]
-  end
-  defp hex_to_ip_list(addr) do
-    <<48, 120, a::binary-size(2), b::binary-size(2), c::binary-size(2), d::binary-size(2)>> = addr
-    [a, b, c, d]
-    |> Enum.map(&String.to_integer(&1, 16))
-  end
-
-  defp bin_to_ip_list(addr) do
-    <<48, 98, a::binary-size(8), b::binary-size(8), c::binary-size(8), d::binary-size(8)>> = addr
-    [a, b, c, d]
-    |> Enum.map(&String.to_integer(&1, 2))
-  end
-
-  defp just_ones_and_zeroes?(bin) do
-    bin
-    |> String.slice(2..-1)
-    |> String.graphemes
-    |> Enum.all?(fn(x) -> x == "0" || x == "1" end)
-  end
-
-  defp dotted_to_ip_list(addr) do
-    addr = String.split(addr, ".")
-    cond do
-      Enum.any?(addr, fn(x) -> String.length(x) > 3 end) ->
-        Enum.map(addr, &String.to_integer(&1, 2))
-      true ->
-        Enum.map(addr, &String.to_integer/1)
-    end
-  end
-
-  defp validate_ip_list(addr) when length(addr) === 4 do
-    Enum.all?(addr, fn (x) -> x > -1 && x < 256 end)
-  end
-  defp validate_ip_list(_), do: false
-
-  defp number_of_dots(addr) do
-    addr
-    |> String.graphemes
-    |> Enum.filter(&(&1 == "."))
-    |> length
   end
 
   @doc """
@@ -181,22 +94,6 @@ defmodule IPA do
         mask |> mask_to_bits |> valid_mask?
       true -> false
     end
-  end
-
-  defp mask_to_bits(mask) do
-    mask |> to_ip_list |> transform_addr(2, 8, ".", "")
-  end
-
-  # Check to make sure that 1s don't follow 0s
-  # or that the mask doesn't start with a 0
-  defp binary_validation(_, [], _), do: true
-  defp binary_validation(?0, _, []), do: false
-  defp binary_validation(?1, _, ?0), do: false
-  defp binary_validation(?1, [h|t], _) do
-    binary_validation(h, t, ?1)
-  end
-  defp binary_validation(?0, [h|t], _) do
-    binary_validation(h, t, ?0)
   end
 
   @doc """
@@ -427,13 +324,6 @@ defmodule IPA do
     end
   end
 
-  defp transform_to_cidr(bin) do
-    bin
-    |> String.replace(".", "")
-    |> String.replace("0", "")
-    |> String.length
-  end
-
   @doc """
   Checks whether a given IP address is reserved.
 
@@ -487,20 +377,116 @@ defmodule IPA do
     |> which_block?
   end
 
+  # this whole pre-transformations validations feels REALLY clunky
+  defp pre_transformation_validations(addr) when is_tuple(addr), do: true
+  defp pre_transformation_validations(mask) when is_integer(mask) do
+    if mask < 33 and mask > 0, do: true, else: false
+  end
+  defp pre_transformation_validations(addr) do
+    cond do
+      String.at(addr, 1) == "b" and String.length(addr) != 34 ->
+        false
+      String.at(addr, 1) == "b" and not just_ones_and_zeroes?(addr) ->
+        false
+      number_of_dots(addr) > 3 ->
+        false
+      String.length(addr) == 35 and not just_ones_and_zeroes?(String.replace(addr, ".", "")) ->
+        false
+      String.at(addr, 1) == "x" and String.length(addr) != 10 ->
+        false
+      true -> true
+    end
+  end
+
+  defp to_ip_list(ip) do
+    cond do
+      is_integer(ip) ->
+        int_to_ip_list(ip)
+      is_tuple(ip) ->
+        Tuple.to_list(ip)
+      String.at(ip, 1) == "x" ->
+        hex_to_ip_list(ip)
+      String.at(ip, 1) == "b" ->
+        bin_to_ip_list(ip)
+      String.contains?(ip, ".") ->
+        dotted_to_ip_list(ip)
+      true ->
+        false
+    end
+  end
+
+  defp int_to_ip_list(mask) do
+    (List.duplicate(255, div(mask, 8)) ++ Enum.at(@mask_bits, rem(mask, 8)))
+    |> add_zero_bits
+  end
+
+  defp hex_to_ip_list(addr) do
+    <<48, 120, a::binary-size(2), b::binary-size(2), c::binary-size(2), d::binary-size(2)>> = addr
+    [a, b, c, d]
+    |> Enum.map(&String.to_integer(&1, 16))
+  end
+
+  defp bin_to_ip_list(addr) do
+    <<48, 98, a::binary-size(8), b::binary-size(8), c::binary-size(8), d::binary-size(8)>> = addr
+    [a, b, c, d]
+    |> Enum.map(&String.to_integer(&1, 2))
+  end
+
+  defp just_ones_and_zeroes?(bin) do
+    bin
+    |> String.slice(2..-1)
+    |> String.graphemes
+    |> Enum.all?(fn(x) -> x == "0" || x == "1" end)
+  end
+
+  defp dotted_to_ip_list(addr) do
+    addr = String.split(addr, ".")
+    cond do
+      Enum.any?(addr, fn(x) -> String.length(x) > 3 end) ->
+        Enum.map(addr, &String.to_integer(&1, 2))
+      true ->
+        Enum.map(addr, &String.to_integer/1)
+    end
+  end
+
+  defp validate_ip_list(addr) when length(addr) === 4 do
+    Enum.all?(addr, fn (x) -> x > -1 && x < 256 end)
+  end
+  defp validate_ip_list(_), do: false
+
+  defp number_of_dots(addr) do
+    addr
+    |> String.graphemes
+    |> Enum.filter(&(&1 == "."))
+    |> length
+  end
+
+  defp mask_to_bits(mask) do
+    mask |> to_ip_list |> transform_addr(2, 8, ".", "")
+  end
+
+  defp transform_to_cidr(bin) do
+    bin
+    |> String.replace(~r/\.|0/, "")
+    |> String.length
+  end
+
+  # Check to make sure that 1s don't follow 0s
+  # or that the mask doesn't start with a 0
+  defp binary_validation(_, [], _), do: true
+  defp binary_validation(?0, _, []), do: false
+  defp binary_validation(?1, _, ?0), do: false
+  defp binary_validation(?1, [h|t], _) do
+    binary_validation(h, t, ?1)
+  end
+  defp binary_validation(?0, [h|t], _) do
+    binary_validation(h, t, ?0)
+  end
+
   defp add_zero_bits(octets_list) when length(octets_list) == 4, do: octets_list
   defp add_zero_bits(octets_list) do
     add_zero_bits(octets_list ++ [0])
   end
-
-  defp decode_mask_bits(0), do: []
-  defp decode_mask_bits(1), do: [128]
-  defp decode_mask_bits(2), do: [192]
-  defp decode_mask_bits(3), do: [224]
-  defp decode_mask_bits(4), do: [240]
-  defp decode_mask_bits(5), do: [248]
-  defp decode_mask_bits(6), do: [252]
-  defp decode_mask_bits(7), do: [254]
-  defp decode_mask_bits(8), do: [255]
 
   # Convert address to different numerical base,
   # (ie. 2 for binary, 16 for hex), left-pads,
