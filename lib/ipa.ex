@@ -82,6 +82,10 @@ defmodule IPA do
     end
   end
 
+  defp hex_to_ip_list(addr) when byte_size(addr) == 4 do
+    <<48, 120, a::binary-size(2)>> = addr
+    [String.to_integer(a, 16)]
+  end
   defp hex_to_ip_list(addr) do
     <<48, 120, a::binary-size(2), b::binary-size(2), c::binary-size(2), d::binary-size(2)>> = addr
     [a, b, c, d]
@@ -374,30 +378,28 @@ defmodule IPA do
 
       iex> IPA.to_cidr("255.255.255.0")
       24
+      iex> IPA.to_cidr("0xFFFFFF00")
+      24
+      iex> IPA.to_cidr("0b11111111111111111111111100000000")
+      24
+      iex> IPA.to_cidr({255, 255, 255, 0})
+      24
+      iex> IPA.to_cidr("192.168.0.1")
+      ** (SubnetError) Invalid Subnet Mask
   """
   def to_cidr(mask) do
-    cond do
-      Regex.match?(@mask_regex, mask) ->
-        cond do
-          valid_mask?(mask) ->
-            mask
-            |> String.replace(".", "")
-            |> transform_to_cidr
-          true ->
-            raise SubnetError
-        end
-     true ->
-        mask
-        |> validate_and_transform_to_int_list
-        |> Enum.map(&Integer.to_string(&1, 2))
-        |> Enum.join
-        |> transform_to_cidr
+    bits_mask = mask_to_bits(mask)
+    if valid_mask?(bits_mask) do
+      transform_to_cidr(bits_mask)
+    else
+      raise SubnetError
     end
   end
 
   defp transform_to_cidr(bin) do
     bin
-    |> String.strip(?0)
+    |> String.replace(".", "")
+    |> String.replace("0", "")
     |> String.length
   end
 

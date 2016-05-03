@@ -26,7 +26,7 @@ defmodule IPATest do
     refute IPA.valid_address?("0b1100000010101000000000000000000111111111")
   end
 
-  test "valid bits address" do
+  test "validity of bits addresses" do
     assert IPA.valid_address?("11000000.10101000.00000000.00000001")
     assert IPA.valid_address?("00001010.00000000.00000000.11111110")
     assert IPA.valid_address?("00001000.00001000.00001000.00001000")
@@ -35,7 +35,7 @@ defmodule IPATest do
     refute IPA.valid_address?("0b110000.00101010.00000000.00000000.11111111")
   end
 
-  test "valid hex address" do
+  test "validity of hex addresses" do
     assert IPA.valid_address?("0xC0A80001")
     assert IPA.valid_address?("0x08080808")
     assert IPA.valid_address?("0x0A0000FE")
@@ -44,7 +44,7 @@ defmodule IPATest do
     refute IPA.valid_address?("0x0A0000")
   end
 
-  test "valid octets address" do
+  test "validity of octets addresses" do
     assert IPA.valid_address?({192, 168, 0, 1})
     assert IPA.valid_address?({10, 0, 0, 254})
     assert IPA.valid_address?({8, 8, 8, 8})
@@ -132,6 +132,19 @@ defmodule IPATest do
     refute IPA.valid_mask?(33)
     refute IPA.valid_mask?("0b11000000101010000000000000000001")
     refute IPA.valid_mask?("0xC0A80001")
+  end
+
+  test "mask to cidr" do
+    assert IPA.to_cidr("255.255.255.0") == 24
+    assert IPA.to_cidr("0xFFFFFF00") == 24
+    assert IPA.to_cidr("0b11111111111111111111111100000000") == 24
+    assert IPA.to_cidr({255, 255, 255, 0}) == 24
+  end
+
+  test "invalid dot decimal mask to cidr raises error" do
+    assert_raise SubnetError, "Invalid Subnet Mask", fn ->
+      IPA.to_cidr("192.168.0.1")
+    end
   end
 
   test "public address is not reserved" do

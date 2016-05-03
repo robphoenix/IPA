@@ -74,8 +74,7 @@ iex> IPA.valid_mask?({255, 255, 255, 0})
 true
 ```
 
-Transform an address between dotted decimal, dotted binary, hexadecimal,
-binary and 4-element tuple representation:
+Transform an address or mask between dotted decimal, dotted binary, hexadecimal, binary, 4-element tuple and CIDR representation:
 
 ```elixir
 # IPA.to_bits
@@ -145,6 +144,18 @@ iex> IPA.to_dotted_dec(33)
 ** (SubnetError) Invalid Subnet Mask
 iex> IPA.to_dotted_dec({192, 168, 0, 256})
 ** (IPError) Invalid IP Address
+
+# IPA.to_cidr
+iex> IPA.to_cidr("255.255.255.0")
+24
+iex> IPA.to_cidr("0xFFFFFF00")
+24
+iex> IPA.to_cidr("0b11111111111111111111111100000000")
+24
+iex> IPA.to_cidr({255, 255, 255, 0})
+24
+iex> IPA.to_cidr("192.168.0.1")
+** (SubnetError) Invalid Subnet Mask
 ```
 
 Find out if the address is part of a reserved private address block
