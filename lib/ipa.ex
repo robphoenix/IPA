@@ -51,6 +51,9 @@ defmodule IPA do
 
   # this whole pre-transformations validations feels REALLY clunky
   defp pre_transformation_validations(addr) when is_tuple(addr), do: true
+  defp pre_transformation_validations(mask) when is_integer(mask) do
+    if mask < 33 and mask > 0, do: true, else: false
+  end
   defp pre_transformation_validations(addr) do
     cond do
       String.at(addr, 1) == "b" and String.length(addr) != 34 ->
@@ -67,19 +70,26 @@ defmodule IPA do
     end
   end
 
-  defp to_ip_list(addr) do
+  defp to_ip_list(ip) do
     cond do
-      is_tuple(addr) ->
-        Tuple.to_list(addr)
-      String.at(addr, 1) == "x" ->
-        hex_to_ip_list(addr)
-      String.at(addr, 1) == "b" ->
-        bin_to_ip_list(addr)
-      String.contains?(addr, ".") ->
-        dotted_to_ip_list(addr)
+      is_integer(ip) ->
+        int_to_ip_list(ip)
+      is_tuple(ip) ->
+        Tuple.to_list(ip)
+      String.at(ip, 1) == "x" ->
+        hex_to_ip_list(ip)
+      String.at(ip, 1) == "b" ->
+        bin_to_ip_list(ip)
+      String.contains?(ip, ".") ->
+        dotted_to_ip_list(ip)
       true ->
         false
     end
+  end
+
+  defp int_to_ip_list(mask) do
+    (List.duplicate(255, div(mask, 8)) ++ decode_mask_bits(rem(mask, 8)))
+    |> add_zero_bits
   end
 
   defp hex_to_ip_list(addr) when byte_size(addr) == 4 do
@@ -213,21 +223,21 @@ defmodule IPA do
       ** (SubnetError) Invalid Subnet Mask
   """
   @spec to_dotted_dec(ip) :: String.t
-  def to_dotted_dec(mask) when is_integer(mask) do
-    mask
-    |> validate_and_transform_to_int_list
-    |> Enum.join(".")
-  end
-  def to_dotted_dec(ip) do
+  def to_dotted_dec(ip)
+
+  def to_dotted_dec(mask) when is_integer(mask), do: do_to_dotted_dec(mask, SubnetError)
+  def to_dotted_dec(addr), do: do_to_dotted_dec(addr, IPError)
+
+  defp do_to_dotted_dec(ip, error) do
     ip_list = if pre_transformation_validations(ip) do
       ip |> to_ip_list
     else
-      raise IPError
+      raise error
     end
     if validate_ip_list(ip_list) do
       Enum.join(ip_list, ".")
     else
-      raise IPError
+      raise error
     end
   end
 
@@ -247,22 +257,27 @@ defmodule IPA do
       "0b11000000101010000000000000000001"
       iex> IPA.to_binary("255.255.255.0")
       "0b11111111111111111111111100000000"
+      iex> IPA.to_binary(24)
+      "0b11111111111111111111111100000000"
       iex> IPA.to_binary("255.255.256.0")
       ** (IPError) Invalid IP Address
   """
   @spec to_binary(ip) :: String.t
   def to_binary(ip)
 
-  def to_binary(addr) do
-    ip_list = if pre_transformation_validations(addr) do
-      addr |> to_ip_list
+  def to_binary(mask) when is_integer(mask), do: do_to_binary(mask, SubnetError)
+  def to_binary(addr), do: do_to_binary(addr, IPError)
+
+  defp do_to_binary(ip, error) do
+    ip_list = if pre_transformation_validations(ip) do
+      ip |> to_ip_list
     else
-      raise IPError
+      raise error
     end
     if validate_ip_list(ip_list) do
       transform_addr(ip_list, 2, 8, "", "0b")
     else
-      raise IPError
+      raise error
     end
   end
 
@@ -282,22 +297,27 @@ defmodule IPA do
       "11000000.10101000.00000000.00000001"
       iex> IPA.to_bits("255.255.255.0")
       "11111111.11111111.11111111.00000000"
+      iex> IPA.to_bits(24)
+      "11111111.11111111.11111111.00000000"
       iex> IPA.to_bits("192.168.0.256")
       ** (IPError) Invalid IP Address
   """
   @spec to_bits(ip) :: String.t
   def to_bits(ip)
 
-  def to_bits(addr)  do
-    ip_list = if pre_transformation_validations(addr) do
-      addr |> to_ip_list
+  def to_bits(mask) when is_integer(mask), do: do_to_bits(mask, SubnetError)
+  def to_bits(addr), do: do_to_bits(addr, IPError)
+
+  defp do_to_bits(ip, error) do
+    ip_list = if pre_transformation_validations(ip) do
+      ip |> to_ip_list
     else
-      raise IPError
+      raise error
     end
     if validate_ip_list(ip_list) do
       transform_addr(ip_list, 2, 8, ".", "")
     else
-      raise IPError
+      raise error
     end
   end
 
@@ -318,22 +338,27 @@ defmodule IPA do
       "0xC0A80001"
       iex> IPA.to_hex("11000000.10101000.00000000.00000001")
       "0xC0A80001"
+      iex> IPA.to_hex(24)
+      "0xFFFFFF00"
       iex> IPA.to_hex("192.168.0.256")
       ** (IPError) Invalid IP Address
   """
   @spec to_hex(ip) :: String.t
   def to_hex(ip)
 
-  def to_hex(addr) do
-    ip_list = if pre_transformation_validations(addr) do
-      addr |> to_ip_list
+  def to_hex(mask) when is_integer(mask), do: do_to_hex(mask, SubnetError)
+  def to_hex(addr), do: do_to_hex(addr, IPError)
+
+  defp do_to_hex(ip, error) do
+    ip_list = if pre_transformation_validations(ip) do
+      ip |> to_ip_list
     else
-      raise IPError
+      raise error
     end
     if validate_ip_list(ip_list) do
       transform_addr(ip_list, 16, 2, "", "0x")
     else
-      raise IPError
+      raise error
     end
   end
 
@@ -354,20 +379,27 @@ defmodule IPA do
       {192, 168, 0, 1}
       iex> IPA.to_octets("11000000.10101000.00000000.00000001")
       {192, 168, 0, 1}
+      iex> IPA.to_octets(24)
+      {255, 255, 255, 0}
       iex> IPA.to_octets("192.168.0.256")
       ** (IPError) Invalid IP Address
   """
   @spec to_octets(ip) :: {integer}
-  def to_octets(ip) do
+  def to_octets(ip)
+
+  def to_octets(mask) when is_integer(mask), do: do_to_octets(mask, SubnetError)
+  def to_octets(addr), do: do_to_octets(addr, IPError)
+
+  defp do_to_octets(ip, error) do
     ip_list = if pre_transformation_validations(ip) do
       ip |> to_ip_list
     else
-      raise IPError
+      raise error
     end
     if validate_ip_list(ip_list) do
       List.to_tuple(ip_list)
     else
-      raise IPError
+      raise error
     end
   end
 
@@ -454,24 +486,6 @@ defmodule IPA do
     addr
     |> to_octets
     |> which_block?
-  end
-
-  # check if address is valid, and if it is transform
-  # it into a list of integers.
-  defp validate_and_transform_to_int_list(mask) when is_integer(mask) do
-    if valid_mask?(mask) do
-      (List.duplicate(255, div(mask, 8)) ++ decode_mask_bits(rem(mask, 8)))
-      |> add_zero_bits
-    else
-      raise SubnetError
-    end
-  end
-  defp validate_and_transform_to_int_list(addr) do
-    if valid_address?(addr) do
-      for n <- String.split(addr, "."), do: String.to_integer(n)
-    else
-      raise IPError
-    end
   end
 
   defp add_zero_bits(octets_list) when length(octets_list) == 4, do: octets_list

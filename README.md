@@ -78,82 +78,123 @@ Transform an address or mask between dotted decimal, dotted binary, hexadecimal,
 
 ```elixir
 # IPA.to_bits
+# dotted decimal -> dotted binary
 iex> IPA.to_bits("192.168.0.1")
 "11000000.10101000.00000000.00000001"
+# hexadecimal -> dotted binary
 iex> IPA.to_bits("0xC0A80001")
 "11000000.10101000.00000000.00000001"
+# tuple -> dotted binary
 iex> IPA.to_bits({192, 168, 0, 1})
 "11000000.10101000.00000000.00000001"
+# binary -> dotted binary
 iex> IPA.to_bits("0b11000000101010000000000000000001")
 "11000000.10101000.00000000.00000001"
+# cidr -> dotted binary
+iex> IPA.to_bits(24)
+"11111111.11111111.11111111.00000000"
+# invalid address
 iex> IPA.to_bits("192.168.0.256")
 ** (IPError) Invalid IP Address
 
 # IPA.to_hex
+# dotted decimal -> hexadecimal
 iex> IPA.to_hex("192.168.0.1")
 "0xC0A80001"
+# binary -> hexadecimal
 iex> IPA.to_hex("0b11000000101010000000000000000001")
 "0xC0A80001"
+# dotted binary -> hexadecimal
 iex> IPA.to_hex("11000000.10101000.00000000.00000001")
 "0xC0A80001"
+# tuple -> hexadecimal
 iex> IPA.to_hex({192, 168, 0, 1})
 "0xC0A80001"
+# cidr -> hexadecimal
+iex> IPA.to_hex(24)
+"0xFFFFFF00"
+# invalid addresses
 iex> IPA.to_hex("192.168.0.256")
 ** (IPError) Invalid IP Address
 iex> IPA.to_hex("0b11000000101010000000000000000002")
 ** (IPError) Invalid IP Address
 
 # IPA.to_binary
+# dotted decimal -> binary
 iex> IPA.to_binary("192.168.0.1")
 "0b11000000101010000000000000000001"
+# hexadecimal -> binary
 iex> IPA.to_binary("0xC0A80001")
 "0b11000000101010000000000000000001"
+# dotted binary -> binary
 iex> IPA.to_binary("11000000.10101000.00000000.00000001")
 "0b11000000101010000000000000000001"
+# tuple -> binary
 iex> IPA.to_binary({192, 168, 0, 1})
 "0b11000000101010000000000000000001"
+# cidr -> binary
+iex> IPA.to_binary(24)
+"0b11111111111111111111111100000000"
+# invalid address
 iex> IPA.to_binary({192, 168, 0, 256})
 ** (IPError) Invalid IP Address
 
 # IPA.to_octets
+# dotted decimal address -> tuple
 iex> IPA.to_octets("192.168.0.1")
 {192, 168, 0, 1}
+# dotted decimal mask -> tuple
 iex> IPA.to_octets("255.255.255.0")
 {255, 255, 255, 0}
+# binary -> tuple
 iex> IPA.to_octets("0b11000000101010000000000000000001")
 {192, 168, 0, 1}
+# hexadecimal -> tuple
 iex> IPA.to_octets("0xC0A80001")
 {192, 168, 0, 1}
+# dotted binary -> tuple
 iex> IPA.to_octets("11000000.10101000.00000000.00000001")
 {192, 168, 0, 1}
+# invalid address
 iex> IPA.to_octets("192.168.0.256")
 ** (IPError) Invalid IP Address
 
 # IPA.to_dotted_dec
+# cidr -> dotted decimal
 iex> IPA.to_dotted_dec(24)
 "255.255.255.0"
+# tuple -> dotted decimal
 iex> IPA.to_dotted_dec({192, 168, 0, 1})
 "192.168.0.1"
+# binary -> dotted decimal
 iex> IPA.to_dotted_dec("0b11000000101010000000000000000001")
 "192.168.0.1"
+# hexadecimal -> dotted decimal
 iex> IPA.to_dotted_dec("0xC0A80001")
 "192.168.0.1"
+# dotted binary -> dotted decimal
 iex> IPA.to_dotted_dec("11000000.10101000.00000000.00000001")
 "192.168.0.1"
+# invalid mask/address
 iex> IPA.to_dotted_dec(33)
 ** (SubnetError) Invalid Subnet Mask
 iex> IPA.to_dotted_dec({192, 168, 0, 256})
 ** (IPError) Invalid IP Address
 
 # IPA.to_cidr
+# dotted decimal to cidr
 iex> IPA.to_cidr("255.255.255.0")
 24
+# hexadecimal -> cidr
 iex> IPA.to_cidr("0xFFFFFF00")
 24
+# binary -> cidr
 iex> IPA.to_cidr("0b11111111111111111111111100000000")
 24
+# tuple -> cidr
 iex> IPA.to_cidr({255, 255, 255, 0})
 24
+# invalid mask
 iex> IPA.to_cidr("192.168.0.1")
 ** (SubnetError) Invalid Subnet Mask
 ```

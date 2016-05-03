@@ -56,6 +56,7 @@ defmodule IPATest do
   test "addresses to hex" do
     assert IPA.to_hex("192.168.0.1") == "0xC0A80001"
     assert IPA.to_hex("255.255.255.0") == "0xFFFFFF00"
+    assert IPA.to_hex(24) == "0xFFFFFF00"
     assert IPA.to_hex({192, 168, 0, 1}) == "0xC0A80001"
     assert IPA.to_hex("0b11000000101010000000000000000001") == "0xC0A80001"
     assert IPA.to_hex("11000000.10101000.00000000.00000001") == "0xC0A80001"
@@ -66,6 +67,7 @@ defmodule IPATest do
     assert IPA.to_bits({192, 168, 0, 1}) == "11000000.10101000.00000000.00000001"
     assert IPA.to_bits("0b11000000101010000000000000000001") == "11000000.10101000.00000000.00000001"
     assert IPA.to_bits("0xC0A80001") == "11000000.10101000.00000000.00000001"
+    assert IPA.to_bits(24) == "11111111.11111111.11111111.00000000"
   end
 
   test "addresses to binary" do
@@ -73,6 +75,7 @@ defmodule IPATest do
     assert IPA.to_binary({192, 168, 0, 1}) == "0b11000000101010000000000000000001"
     assert IPA.to_binary("0xC0A80001") == "0b11000000101010000000000000000001"
     assert IPA.to_binary("11000000.10101000.00000000.00000001") == "0b11000000101010000000000000000001"
+    assert IPA.to_binary(24) == "0b11111111111111111111111100000000"
   end
 
   test "addresses to octets" do
@@ -80,6 +83,7 @@ defmodule IPATest do
     assert IPA.to_octets("0b11000000101010000000000000000001") == {192, 168, 0, 1}
     assert IPA.to_octets("0xC0A80001") == {192, 168, 0, 1}
     assert IPA.to_octets("11000000.10101000.00000000.00000001") == {192, 168, 0, 1}
+    assert IPA.to_octets(24) == {255, 255, 255, 0}
   end
 
   test "addresses to dotted decimal" do
@@ -87,6 +91,7 @@ defmodule IPATest do
     assert IPA.to_dotted_dec("0b11000000101010000000000000000001") == "192.168.0.1"
     assert IPA.to_dotted_dec("0xC0A80001") == "192.168.0.1"
     assert IPA.to_dotted_dec("11000000.10101000.00000000.00000001") == "192.168.0.1"
+    assert IPA.to_dotted_dec(24) == "255.255.255.0"
   end
 
   test "invalid dot decimal address to binary raises error" do
