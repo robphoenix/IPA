@@ -158,7 +158,8 @@ notation IP address/subnet mask to binary bits</p>
     <a href="#to_cidr/1">to_cidr(mask)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Converts a dotted decimal Subnet Mask to CIDR notation</p>
+    <div class="summary-synopsis"><p>Converts a dotted decimal, hex, binary, tuple &amp; dotted binary
+Subnet Mask to CIDR notation</p>
 </div>
   
 </div>
@@ -199,7 +200,7 @@ the 4 octets</p>
     <a href="#valid_address?/1">valid_address?(addr)</a>
   </div>
   
-    <div class="summary-synopsis"><p>Checks if the given dotted decimal IP address is valid</p>
+    <div class="summary-synopsis"><p>Checks if the given IP address is valid</p>
 </div>
   
 </div>
@@ -453,7 +454,8 @@ iex&gt; IPA.to_bits(&quot;192.168.0.256&quot;)
   </div>
   
   <section class="docstring">
-    <p>Converts a dotted decimal Subnet Mask to CIDR notation.</p>
+    <p>Converts a dotted decimal, hex, binary, tuple &amp; dotted binary
+Subnet Mask to CIDR notation.</p>
 <h2>Examples</h2>
 <pre><code class="iex elixir">iex&gt; IPA.to_cidr(&quot;255.255.255.0&quot;)
 24
@@ -462,6 +464,8 @@ iex&gt; IPA.to_cidr(&quot;0xFFFFFF00&quot;)
 iex&gt; IPA.to_cidr(&quot;0b11111111111111111111111100000000&quot;)
 24
 iex&gt; IPA.to_cidr({255, 255, 255, 0})
+24
+iex&gt; IPA.to_cidr(&quot;11111111.11111111.11111111.00000000&quot;)
 24
 iex&gt; IPA.to_cidr(&quot;192.168.0.1&quot;)
 ** (SubnetError) Invalid Subnet Mask</code></pre>
@@ -604,7 +608,7 @@ iex&gt; IPA.to_octets(&quot;192.168.0.256&quot;)
     </div>
   
   <section class="docstring">
-    <p>Checks if the given dotted decimal IP address is valid.</p>
+    <p>Checks if the given IP address is valid.</p>
 <p>Does not currently take into consideration
 the fact that <code class="inline">127.1</code> can be considered a valid IP address
 that translates to <code class="inline">127.0.0.1</code>.</p>
@@ -650,8 +654,6 @@ true</code></pre>
   
   <section class="docstring">
     <p>Checks if the given subnet mask is valid.</p>
-<p>Works with CIDR notation, as well as dotted decimal and
-dotted binary.</p>
 <h2>Examples</h2>
 <pre><code class="iex elixir">iex&gt; IPA.valid_mask?(24)
 true
