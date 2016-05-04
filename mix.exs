@@ -7,7 +7,7 @@ defmodule Ipa.Mixfile do
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     source_url: "https://github.com/bordeltabernacle/IPA"
+     source_url: "https://github.com/bordeltabernacle/IPA",
      description: description,
      package: package,
      deps: deps]
@@ -30,7 +30,8 @@ defmodule Ipa.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [{:earmark, "~> 0.1", only: :dev},
+     {:ex_doc, "~> 0.11", only: :dev}]
   end
 
   defp description do
@@ -42,7 +43,7 @@ defmodule Ipa.Mixfile do
 
   defp package do
     [name: :ipa,
-     files: ["lib", "priv", "mix.exs", "README.md", "LICENSE", "test"],
+     files: ["lib", "mix.exs", "README.md", "LICENSE", "test"],
      maintainers: ["Rob Phoenix"],
      licenses: ["MIT"],
      links: %{"GitHub" => "https://github.com/bordeltabernacle/IPA"}]
