@@ -43,7 +43,7 @@ defmodule IPA do
   @spec valid_address?(addr) :: boolean
   def valid_address?(addr) do
     if pre_transformation_validations(addr) do
-      addr |> to_ip_list |> validate_ip_list
+      addr |> to_octet_list |> validate_octet_list
     else
       false
     end
@@ -123,11 +123,11 @@ defmodule IPA do
 
   defp do_to_dotted_dec(ip, error) do
     ip_list = if pre_transformation_validations(ip) do
-      ip |> to_ip_list
+      ip |> to_octet_list
     else
       raise error
     end
-    if validate_ip_list(ip_list) do
+    if validate_octet_list(ip_list) do
       Enum.join(ip_list, ".")
     else
       raise error
@@ -163,11 +163,11 @@ defmodule IPA do
 
   defp do_to_binary(ip, error) do
     ip_list = if pre_transformation_validations(ip) do
-      ip |> to_ip_list
+      ip |> to_octet_list
     else
       raise error
     end
-    if validate_ip_list(ip_list) do
+    if validate_octet_list(ip_list) do
       transform_addr(ip_list, 2, 8, "", "0b")
     else
       raise error
@@ -203,11 +203,11 @@ defmodule IPA do
 
   defp do_to_bits(ip, error) do
     ip_list = if pre_transformation_validations(ip) do
-      ip |> to_ip_list
+      ip |> to_octet_list
     else
       raise error
     end
-    if validate_ip_list(ip_list) do
+    if validate_octet_list(ip_list) do
       transform_addr(ip_list, 2, 8, ".", "")
     else
       raise error
@@ -244,11 +244,11 @@ defmodule IPA do
 
   defp do_to_hex(ip, error) do
     ip_list = if pre_transformation_validations(ip) do
-      ip |> to_ip_list
+      ip |> to_octet_list
     else
       raise error
     end
-    if validate_ip_list(ip_list) do
+    if validate_octet_list(ip_list) do
       transform_addr(ip_list, 16, 2, "", "0x")
     else
       raise error
@@ -285,11 +285,11 @@ defmodule IPA do
 
   defp do_to_octets(ip, error) do
     ip_list = if pre_transformation_validations(ip) do
-      ip |> to_ip_list
+      ip |> to_octet_list
     else
       raise error
     end
-    if validate_ip_list(ip_list) do
+    if validate_octet_list(ip_list) do
       List.to_tuple(ip_list)
     else
       raise error
@@ -378,60 +378,62 @@ defmodule IPA do
   end
 
   # this whole pre-transformations validations feels REALLY clunky
+  # a series of basic validity checks before transforming to list of octets
   defp pre_transformation_validations(addr) when is_tuple(addr), do: true
   defp pre_transformation_validations(mask) when is_integer(mask) do
     if mask < 33 and mask > 0, do: true, else: false
   end
   defp pre_transformation_validations(addr) do
     cond do
-      String.at(addr, 1) == "b" and String.length(addr) != 34 ->
-        false
-      String.at(addr, 1) == "b" and not just_ones_and_zeroes?(addr) ->
-        false
-      number_of_dots(addr) > 3 ->
-        false
-      String.length(addr) == 35 and not just_ones_and_zeroes?(String.replace(addr, ".", "")) ->
-        false
-      String.at(addr, 1) == "x" and String.length(addr) != 10 ->
-        false
+      String.at(addr, 1) == "b" and String.length(addr) != 34 -> false
+      String.at(addr, 1) == "b" and not just_ones_and_zeroes?(addr) -> false
+      number_of_dots(addr) > 3 -> false
+      String.length(addr) == 35 and not just_ones_and_zeroes?(String.replace(addr, ".", "")) -> false
+      String.at(addr, 1) == "x" and String.length(addr) != 10 -> false
       true -> true
     end
   end
 
-  defp to_ip_list(ip) do
+  # funnel different notation types to the appropriate means
+  # of transforming to a 4-element list of octets
+  defp to_octet_list(ip) do
     cond do
       is_integer(ip) ->
-        int_to_ip_list(ip)
+        int_to_octet_list(ip)
       is_tuple(ip) ->
         Tuple.to_list(ip)
       String.at(ip, 1) == "x" ->
-        hex_to_ip_list(ip)
+        hex_to_octet_list(ip)
       String.at(ip, 1) == "b" ->
-        bin_to_ip_list(ip)
+        bin_to_octet_list(ip)
       String.contains?(ip, ".") ->
-        dotted_to_ip_list(ip)
+        dotted_to_octet_list(ip)
       true ->
         false
     end
   end
 
-  defp int_to_ip_list(mask) do
+  # transform an integer (cidr notation mask) to a 4-element list of octets
+  defp int_to_octet_list(mask) do
     (List.duplicate(255, div(mask, 8)) ++ Enum.at(@mask_bits, rem(mask, 8)))
     |> add_zero_bits
   end
 
-  defp hex_to_ip_list(addr) do
+  # transform a hexidecimal ip address to a 4-element list of octets
+  defp hex_to_octet_list(addr) do
     <<48, 120, a::binary-size(2), b::binary-size(2), c::binary-size(2), d::binary-size(2)>> = addr
     [a, b, c, d]
     |> Enum.map(&String.to_integer(&1, 16))
   end
 
-  defp bin_to_ip_list(addr) do
+  # transform a hexidecimal ip address to a 4-element list of octets
+  defp bin_to_octet_list(addr) do
     <<48, 98, a::binary-size(8), b::binary-size(8), c::binary-size(8), d::binary-size(8)>> = addr
     [a, b, c, d]
     |> Enum.map(&String.to_integer(&1, 2))
   end
 
+  # check a binary number contains only 1 or 0
   defp just_ones_and_zeroes?(bin) do
     bin
     |> String.slice(2..-1)
@@ -439,32 +441,33 @@ defmodule IPA do
     |> Enum.all?(fn(x) -> x == "0" || x == "1" end)
   end
 
-  defp dotted_to_ip_list(addr) do
+  # transform a dotted decimal ip address to a 4-element list of octets
+  defp dotted_to_octet_list(addr) do
     addr = String.split(addr, ".")
-    cond do
-      Enum.any?(addr, fn(x) -> String.length(x) > 3 end) ->
-        Enum.map(addr, &String.to_integer(&1, 2))
-      true ->
-        Enum.map(addr, &String.to_integer/1)
+    if Enum.any?(addr, fn(x) -> String.length(x) > 3 end) do
+      Enum.map(addr, &String.to_integer(&1, 2))
+    else
+      Enum.map(addr, &String.to_integer/1)
     end
   end
 
-  defp validate_ip_list(addr) when length(addr) === 4 do
-    Enum.all?(addr, fn (x) -> x > -1 && x < 256 end)
+  # validate each of the 4 elements in a list of octets
+  defp validate_octet_list(addr) when length(addr) === 4 do
+    Enum.all?(addr, fn x -> x > -1 && x < 256 end)
   end
-  defp validate_ip_list(_), do: false
+  defp validate_octet_list(_), do: false
 
+  # find out how many dots are in the given ip address
   defp number_of_dots(addr) do
-    addr
-    |> String.graphemes
-    |> Enum.filter(&(&1 == "."))
-    |> length
+    addr |> String.replace(~r/[^\.]/, "") |> String.length
   end
 
+  # transform a subnet mask into dotted binary notation
   defp mask_to_bits(mask) do
-    mask |> to_ip_list |> transform_addr(2, 8, ".", "")
+    mask |> to_octet_list |> transform_addr(2, 8, ".", "")
   end
 
+  # transform a binary address to cidr notation
   defp transform_to_cidr(bin) do
     bin
     |> String.replace(~r/\.|0/, "")
@@ -483,6 +486,7 @@ defmodule IPA do
     binary_validation(h, t, ?0)
   end
 
+  # add as many zeroes as necessary to an octets list until it contains 4 elements
   defp add_zero_bits(octets_list) when length(octets_list) == 4, do: octets_list
   defp add_zero_bits(octets_list) do
     add_zero_bits(octets_list ++ [0])
@@ -505,6 +509,7 @@ defmodule IPA do
   defp left_pad(n, max_len, _) when byte_size(n) == byte_size(max_len), do: n
   defp left_pad(n, max_len, char), do: String.rjust(n, max_len, char)
 
+  # discover which block an ip address belongs to
   defp which_block?({0, _, _, _}),                                      do: :this_network
   defp which_block?({10, _, _, _}),                                     do: :rfc1918
   defp which_block?({100, b, _, _}) when b > 63 and b < 128,            do: :rfc6598
