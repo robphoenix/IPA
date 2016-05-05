@@ -228,6 +228,8 @@ iex> IPA.block("8.8.8.8")
 
 Run `mix test`. DocTests included.
 
+## Docs are available on [hexdocs](https://hexdocs.pm/ipa/api-reference.html) or by running `mix docs`.
+
 ## Caveat
 
 Honestly, I don't know how much time I'm actually going to be able to dedicate
