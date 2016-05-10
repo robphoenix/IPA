@@ -216,11 +216,11 @@ blocks can be found in the docs:
 ```elixir
 iex> IPA.block("192.168.0.1")
 :rfc1918
-iex> IPA.block("10.0.1.0")   
+iex> IPA.block("10.0.1.0")
 :rfc1918
-iex> IPA.block("127.0.0.1")  
+iex> IPA.block("127.0.0.1")
 :loopback
-iex> IPA.block("8.8.8.8")    
+iex> IPA.block("8.8.8.8")
 :public
 ```
 
