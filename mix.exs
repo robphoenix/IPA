@@ -3,7 +3,7 @@ defmodule Ipa.Mixfile do
 
   def project do
     [app: :ipa,
-     version: "0.0.2",
+     version: "0.0.3",
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -36,7 +36,7 @@ defmodule Ipa.Mixfile do
 
   defp description do
     """
-    A pale, hoppy library for working with Internet Protocol Addresses.
+    A pale, hoppy library for working with IP Addresses.
     Validate and transform IPv4 addresses and subnet masks.
     """
   end
