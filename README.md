@@ -1,3 +1,7 @@
+# THIS LIBRARY IS NOT CURRENTLY MAINTAINED.
+# I've chosen to spend time with my kids instead.
+
+
 # IPA
 
 A pale, hoppy library for working with Internet Protocol Addresses.
@@ -20,8 +24,6 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
         def application do
           [applications: [:ipa]]
         end
-
-## Usage
 
 The following functions are available in the `IPA` module:
 
@@ -56,11 +58,11 @@ Check if a dotted decimal, dotted binary or CIDR notation subnet mask is valid:
 ```elixir
 iex> IPA.valid_mask?("255.255.255.0")
 true
-iex> IPA.valid_mask?("192.168.0.1")  
+iex> IPA.valid_mask?("192.168.0.1")
 false
-iex> IPA.valid_mask?(24)             
+iex> IPA.valid_mask?(24)
 true
-iex> IPA.valid_mask?(33)             
+iex> IPA.valid_mask?(33)
 false
 iex> IPA.valid_mask?("11111111.11111111.11111111.00000000")
 true
@@ -205,7 +207,7 @@ Find out if the address is part of a reserved private address block
 ```elixir
 iex> IPA.reserved?("192.168.0.1")
 true
-iex> IPA.reserved?("8.8.8.8")    
+iex> IPA.reserved?("8.8.8.8")
 false
 ```
 
