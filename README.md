@@ -1,3 +1,5 @@
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
 # THIS LIBRARY IS NOT CURRENTLY MAINTAINED.
 ### I've chosen to spend time with my kids instead.
 
